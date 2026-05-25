@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Capability Level Framework</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:    #1a73e8;
+      --primary-dk: #1557b0;
+      --bg:         #f0f4f8;
+      --card:       #ffffff;
+      --border:     #dde3ec;
+      --text:       #1f2937;
+      --muted:      #6b7280;
+      --success:    #16a34a;
+      --warn:       #d97706;
+      --danger:     #dc2626;
+      --info:       #0891b2;
+      --purple:     #7c3aed;
+      --radius:     12px;
+      --shadow:     0 2px 12px rgba(0,0,0,0.08);
+      --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    .site-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a73e8 100%);
+      color: #fff;
+      padding: 28px 40px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .site-header .logo {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .site-header h1 {
+      font-size: 22px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .site-header p {
+      font-size: 13px; opacity: 0.75; margin-top: 2px;
+    }
+    .header-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ===== TABS ===== */
+    .tab-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex;
+      gap: 4px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .tab-btn {
+      padding: 16px 22px;
+      border: none; background: transparent;
+      font-size: 14px; font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--primary); background: #f0f7ff; border-radius: 8px 8px 0 0; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-btn .tab-icon { font-size: 16px; }
+
+    /* ===== MAIN CONTENT ===== */
+    .main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+    /* ===== CONFIG PANEL ===== */
+    .config-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow);
+    }
+    .config-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 260px; }
+    .config-group label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .config-group input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 14px;
+      color: var(--text);
+      background: #f9fafb;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .config-group input:focus { outline: none; border-color: var(--primary); background: #fff; }
+    .btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dk); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.35); }
+    .btn-secondary { background: #f3f4f6; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ===== STATUS BAR ===== */
+    .status-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .status-bar.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+    .status-bar.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .status-bar.error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+    .status-bar.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text);
+    }
+    .section-title .title-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ===== LEVEL LEGEND ===== */
+    .level-legend {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 2px solid transparent;
+      cursor: default;
+    }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ===== TABLE WRAPPER ===== */
+    .table-section { margin-bottom: 36px; }
+    .table-wrapper {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .table-header-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .table-header-bar h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .table-meta { font-size: 12px; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: linear-gradient(135deg, #1e3a5f, #1a73e8);
+      color: #fff;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 0; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8faff; }
+    tbody td { padding: 12px 16px; font-size: 13.5px; vertical-align: middle; }
+    tbody td:first-child { font-weight: 600; color: var(--text); }
+
+    /* ===== LEVEL BADGES ===== */
+    .level-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      white-space: nowrap;
+    }
+    .level-1 { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+    .level-2 { background: #fff7ed; color: #ea580c; border: 1px solid #fdba74; }
+    .level-3 { background: #fefce8; color: #ca8a04; border: 1px solid #fde047; }
+    .level-4 { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+    .level-5 { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; }
+
+    /* ===== CAPABILITY CARDS (Standard tab) ===== */
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .cap-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cap-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .cap-card-header {
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff;
+    }
+    .cap-card-icon { font-size: 22px; }
+    .cap-card-title { font-size: 14px; font-weight: 700; }
+    .cap-card-body { padding: 16px 18px; }
+    .cap-level-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .cap-level-row:last-child { border-bottom: none; }
+    .cap-level-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .cap-level-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .cap-level-info p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ===== SMARTOSC TAB EXTRAS ===== */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .sum-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .sum-card .sum-value { font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+    .sum-card .sum-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .progress-bar-bg {
+      flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .progress-label { font-size: 12px; font-weight: 700; color: var(--muted); min-width: 32px; text-align: right; }
+
+    /* ===== EMPTY / PLACEHOLDER ===== */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    /* ===== TAGS ===== */
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px; font-weight: 600;
+      background: #eff6ff; color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      margin: 2px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .site-header { padding: 20px; flex-wrap: wrap; }
+      .tab-bar { padding: 0 16px; overflow-x: auto; }
+      .main { padding: 20px 16px; }
+      .config-panel { flex-direction: column; }
+      .header-badge { display: none; }
+    }
+
+    /* ===== HELP TEXT ===== */
+    .help-text {
+      font-size: 12px; color: var(--muted);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex; align-items: flex-start; gap: 10px;
+      line-height: 1.6;
+    }
+    .help-text .help-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== TAB PANEL ===== */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== SCROLL TOP ===== */
+    #scrollTop {
+      position: fixed; bottom: 30px; right: 30px;
+      width: 44px; height: 44px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 50%;
+      font-size: 20px; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,115,232,0.4);
+      display: none;
+      align-items: center; justify-content: center;
+      transition: all 0.2s;
+      z-index: 999;
+    }
+    #scrollTop:hover { background: var(--primary-dk); transform: translateY(-2px); }
+    #scrollTop.visible { display: flex; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="logo">📊</div>
+  <div>
+    <h1>Data Capability Level Framework</h1>
+    <p>Assess, benchmark and track data maturity across your organization</p>
+  </div>
+  <div class="header-badge">SmartOSC Data & AI</div>
+</header>
+
+<!-- TABS -->
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('standard', this)">
+    <span class="tab-icon">🏛️</span> Standard Framework
+  </button>
+  <button class="tab-btn" onclick="switchTab('smartosc', this)">
+    <span class="tab-icon">🏢</span> SmartOSC Current Status
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- CONFIG PANEL -->
+  <div class="config-panel">
+    <div class="config-group">
+      <label>🔗 Google Sheet ID</label>
+      <input type="text" id="sheetId" placeholder="Paste your Google Sheet ID here..."
+        value="YOUR_SHEET_ID_HERE" />
+    </div>
+    <button class="btn btn-primary" onclick="loadData()" id="loadBtn">
+      ⚡ Load Data
+    </button>
+    <button class="btn btn-secondary" onclick="loadSampleData()">
+      🧪 Load Sample Data
+    </button>
+  </div>
+
+  <div class="help-text">
+    <span class="help-icon">💡</span>
+    <span>
+      <strong>How to connect:</strong> Open your Google Sheet → <em>File → Share → Publish to web</em>
+      → choose <strong>Entire Document</strong> → <strong>CSV</strong> → Publish.
+      Then copy the Sheet ID from the URL (the long string between <code>/d/</code> and <code>/edit</code>).
+      The sheet must have tabs named exactly <strong>Standard</strong> and <strong>SmartOSC-Current</strong>.
+    </span>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="statusBar" class="status-bar info" style="display:none;"></div>
+
+  <!-- ======================== TAB: STANDARD ======================== -->
+  <div id="tab-standard" class="tab-panel active">
+    <div id="standardContent">
+      <div class="empty-state">
+        <div class="empty-icon">🏛️</div>
+        <p>Click <strong>"Load Data"</strong> or <strong>"Load Sample Data"</strong> to display the Standard Framework.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TAB: SMARTOSC ======================== -->
+  <div id="tab-smartosc" class="tab-panel">
+    <div id="smartoscContent">
+      <div class="empty-state">
+        <div class="empty-icon">🏢</div>
+        <p>Click <strong>"Load Data"</strong> or <strong>"Load Sample Data"</strong> to display SmartOSC Current Status.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SCROLL TOP -->
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// =============================================
+//  CONSTANTS & CONFIG
+// =============================================
+const LEVEL_CONFIG = {
+  1: { label: 'Level 1 – Initial',                color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', emoji: '🔴' },
+  2: { label: 'Level 2 – Managed',               color: '#ea580c', bg: '#fff7ed', border: '#fdba74', emoji: '🟠' },
+  3: { label: 'Level 3 – Defined',                color: '#ca8a04', bg: '#fefce8', border: '#fde047', emoji: '🟡' },
+  4: { label: 'Level 4 – Quantitatively Managed', color: '#16a34a', bg: '#f0fdf4', border: '#86efac', emoji: '🟢' },
+  5: { label: 'Level 5 – Optimizing',             color: '#2563eb', bg: '#eff6ff', border: '#93c5fd', emoji: '🔵' },
+};
+
+const DOMAIN_ICONS = {
+  'Data Governance':      '🏛️',
+  'Data Architecture':    '🏗️',
+  'Data Engineering':     '⚙️',
+  'Data Quality':         '✅',
+  'Analytics & BI':       '📊',
+  'AI & Machine Learning':'🤖',
+  'Data Security':        '🔒',
+  'DataOps & MLOps':      '🔄',
+};
+
+// =============================================
+//  SAMPLE DATA
+// =============================================
+const SAMPLE_STANDARD = [
+  // Domain, Level, Level Name, Description, Key Activities, Tools & Technologies, KPIs / Metrics
+  ['Data Governance','1','Initial','Ad-hoc and undocumented data policies; no formal ownership.','No formal data ownership; policies are verbal or absent; reactive handling of data issues.','Spreadsheets, email','# of data issues per month'],
+  ['Data Governance','2','Managed','Basic data ownership defined; some documented policies.','Data owners identified per domain; basic data dictionary; manual compliance checks.','Confluence, SharePoint, Excel','Data owner coverage (%)'],
+  ['Data Governance','3','Defined','Standardized governance framework enterprise-wide; data catalog active.','Enterprise data glossary; automated policy enforcement; regular audits; RACI defined.','Collibra, Alation, Informatica','Policy compliance rate (%)'],
+  ['Data Governance','4','Quantitatively Managed','Metrics-driven governance; SLA-backed data contracts in place.','Real-time governance dashboards; data SLAs with automated alerting; risk scoring.','Collibra + Atlan, Monte Carlo','SLA breach rate; Data trust score'],
+  ['Data Governance','5','Optimizing','Continuous governance improvement; AI-driven compliance monitoring.','Self-healing governance policies; AI-assisted lineage; predictive compliance risk detection.','AI Governance Platforms, LLM-based audit','Policy auto-remediation rate (%)'],
+
+  ['Data Architecture','1','Initial','Data stored in silos; no unified architecture or standards.','Data lives in departmental spreadsheets; no integration; duplicated data everywhere.','Local files, Excel, FTP','# of isolated data silos'],
+  ['Data Architecture','2','Managed','Basic data warehouse exists; limited integration between systems.','Central DWH initiated; ETL jobs partially automated; schema partially documented.','SQL Server, MySQL, simple ETL','DWH coverage of key data domains (%)'],
+  ['Data Architecture','3','Defined','Unified data platform (Lake / Warehouse / Lakehouse) with documented schemas.','Modern data stack adopted; data lineage documented; Data Mesh or Lakehouse design.','Snowflake, Databricks, dbt, Airflow','Data freshness SLA; # of integrated sources'],
+  ['Data Architecture','4','Quantitatively Managed','Cost- and performance-optimized architecture with real-time capabilities.','Event-driven architecture; streaming pipelines; compute cost per query tracked.','Kafka, Flink, Redshift, Delta Lake','Query performance p95; Cost per TB'],
+  ['Data Architecture','5','Optimizing','Self-optimizing architecture; automated schema evolution; zero-downtime migrations.','Architecture auto-scales based on demand; AI-driven query optimization; federated queries.','AI-assisted data platforms, automated IaC','Infrastructure cost savings (%)'],
+
+  ['Data Engineering','1','Initial','Manual data extraction; no pipelines; ad-hoc scripts.','Data moved manually via exports/imports; no version control; scripts not documented.','Excel, manual scripts','# of manual data transfers/month'],
+  ['Data Engineering','2','Managed','Basic ETL pipelines built; limited monitoring and scheduling.','Scheduled ETL jobs; basic error handling; pipelines version-controlled in Git.','Talend, SSIS, cron jobs, Git','Pipeline failure rate (%)'],
+  ['Data Engineering','3','Defined','Standardized ELT pipelines; CI/CD for data; full observability.','dbt models tested and documented; Airflow DAGs standardized; alerts on pipeline failures.','dbt, Airflow, Great Expectations, GitHub Actions','Pipeline uptime (%); Test coverage (%)'],
+  ['Data Engineering','4','Quantitatively Managed','SLA-driven pipelines; automated data quality checks; cost tracking.','SLA per pipeline; automated anomaly detection in data; resource cost per pipeline tracked.','Monte Carlo, Datafold, Atlan','Data SLA compliance (%); Pipeline cost'],
+  ['Data Engineering','5','Optimizing','Self-healing pipelines; AI-generated transformation logic; predictive monitoring.','Auto-remediation of failed jobs; AI suggests schema optimizations; real-time streaming as default.','AI-driven DataOps platforms, Flink, LLM-assisted','MTTR (pipeline); Auto-heal rate (%)'],
+
+  ['Data Quality','1','Initial','No data quality standards; data accuracy unknown.','No validation rules; data errors discovered reactively; no profiling.','Manual checks','# of data errors found per report'],
+  ['Data Quality','2','Managed','Basic validation rules applied; quality issues tracked manually.','Row-count checks; basic null checks; quality issues tracked in spreadsheets.','SQL checks, Excel','Data error rate (%)'],
+  ['Data Quality','3','Defined','Automated data quality suite; quality scores published to stakeholders.','DQ rules codified in dbt tests / Great Expectations; quality dashboards available.','Great Expectations, Soda, dbt tests','DQ score per domain (%)'],
+  ['Data Quality','4','Quantitatively Managed','Predictive quality monitoring; anomaly detection at ingestion.','ML-based anomaly detection; quality trends tracked over time; auto-quarantine of bad data.','Monte Carlo, Anomalo, Bigeye','Anomaly detection precision/recall'],
+  ['Data Quality','5','Optimizing','Self-correcting data quality; AI-generated fix recommendations.','Root-cause AI diagnosis; auto-patching of upstream issues; quality embedded in source systems.','AI DQ platforms, LLM-powered data repair','Auto-fix rate (%); False positive rate (%)'],
+
+  ['Analytics & BI','1','Initial','Static reports in spreadsheets; no self-service capability.','Manual Excel reports; no single source of truth; report duplication across teams.','Excel, PowerPoint','# of manual reports per week'],
+  ['Analytics & BI','2','Managed','Basic BI dashboards in place; limited interactivity.','Central BI tool deployed; standard dashboards for finance/sales; limited drill-down.','Power BI, Tableau, Looker Studio','Dashboard adoption rate (%)'],
+  ['Analytics & BI','3','Defined','Self-service analytics; semantic layer standardized; governed metrics.','Metrics catalog (dbt metrics / LookML); self-service dashboards; embedded analytics.','dbt Metrics, Looker, Power BI Premium','Self-service adoption (%); Report accuracy (%)'],
+  ['Analytics & BI','4','Quantitatively Managed','Predictive analytics embedded; NLP-based querying available.','Forecasting models in dashboards; NLP query (Ask Data, Copilot); A/B test results integrated.','Tableau AI, Power BI Copilot, Sigma','Forecast accuracy (%); NLP query usage'],
+  ['Analytics & BI','5','Optimizing','Autonomous insights; AI proactively surfaces anomalies and opportunities.','AI-generated narrative insights; auto-alerts on KPI deviations; decision intelligence layer.','ThoughtSpot, Einstein Analytics, custom LLM','Time-to-insight (hours); Decision impact (%)'],
+
+  ['AI & Machine Learning','1','Initial','No AI/ML capability; decisions based on intuition or basic statistics.','No ML models in production; data science work is exploratory only; no MLOps.','Jupyter Notebooks, Excel','# of ad-hoc analyses per quarter'],
+  ['AI & Machine Learning','2','Managed','First ML models deployed; manual retraining; limited monitoring.','Models deployed as scripts; manual retraining; basic accuracy metrics tracked.','Python, scikit-learn, basic APIs','Model accuracy (%); # of models in prod'],
+  ['AI & Machine Learning','3','Defined','Standardized ML lifecycle; experiment tracking; model registry in place.','MLflow/DVC for experiments; feature store adopted; automated retraining pipelines.','MLflow, DVC, SageMaker, Vertex AI','Model drift rate; Retraining frequency'],
+  ['AI & Machine Learning','4','Quantitatively Managed','Full MLOps; A/B testing for models; business KPI tracking per model.','Shadow deployments; canary releases; model ROI tracked; responsible AI framework applied.','Kubeflow, BentoML, Evidently AI','Model ROI; Fairness score; Latency p99'],
+  ['AI & Machine Learning','5','Optimizing','AutoML and self-improving models; GenAI integrated in workflows.','LLM agents in production; AutoML for routine tasks; models continuously improve from feedback loops.','LangChain, LlamaIndex, AutoML, Ray','Business value per model; Auto-improvement rate'],
+
+  ['Data Security','1','Initial','No formal data security policies; access not controlled.','No role-based access; data shared freely; no encryption at rest; no audit logs.','None / manual','# of unauthorized data access incidents'],
+  ['Data Security','2','Managed','Basic access control; passwords and basic permissions in place.','User authentication; basic RBAC; some data masked in prod; periodic access reviews.','IAM, basic RBAC, password managers','Access control coverage (%)'],
+  ['Data Security','3','Defined','Comprehensive security policy; encryption, masking, and audit logging standardized.','End-to-end encryption; column-level masking; full audit trail; GDPR/PDPA compliance mapped.','Vault, AWS KMS, Snowflake RBAC, Privacera','Compliance rate (%); Audit coverage (%)'],
+  ['Data Security','4','Quantitatively Managed','Automated threat detection; security metrics tracked and reported.','SIEM integration; automated anomaly detection for data access; Zero Trust architecture.','SIEM, AWS GuardDuty, Macie, Okta','MTTR for security incidents; Zero Trust coverage'],
+  ['Data Security','5','Optimizing','AI-driven security; continuous compliance automation; privacy-by-design.','AI-based threat prediction; automated regulatory change adaptation; differential privacy.','AI Security Platforms, PySyft, Confidential Computing','Predictive threat accuracy (%); Privacy budget'],
+
+  ['DataOps & MLOps','1','Initial','No DevOps practices for data; fully manual deployments.','Manual data deployments; no CI/CD; no testing; no environment separation.','Manual scripts','Deployment frequency; # of production errors'],
+  ['DataOps & MLOps','2','Managed','Basic version control and manual testing; some environment separation.','Git for code; dev/prod environments separated; manual testing before deployment.','Git, basic CI','Deployment lead time (days)'],
+  ['DataOps & MLOps','3','Defined','Full CI/CD for data pipelines and models; automated testing; IaC.','Automated tests for pipelines and models; Terraform for infra; containerized deployments.','Terraform, Docker, GitHub Actions, dbt CI','Deployment success rate (%); Test coverage (%)'],
+  ['DataOps & MLOps','4','Quantitatively Managed','Observability platform; SLOs for data and models; automated rollback.','Full observability (logs, metrics, traces); automated rollback on degradation; cost per deploy tracked.','Datadog, OpenTelemetry, Grafana','DORA metrics; SLO compliance (%)'],
+  ['DataOps & MLOps','5','Optimizing','Self-healing DataOps; AI-generated pipelines; continuous experimentation.','AI recommends pipeline improvements; zero-downtime deployments standard; continuous experimentation culture.','AI-assisted DataOps, GitOps, Platform Engineering','MTTR; Change failure rate; Experimentation velocity'],
+];
+
+const SAMPLE_SMARTOSC = [
+  // Domain, Current Level, Level Name, Evidence / Notes, Key Strengths, Gap to Next Level, Priority, Owner
+  ['Data Governance','2','Managed','Basic data ownership defined for key domains; some policies in Confluence.','Data owners assigned; basic glossary exists','No enterprise catalog; limited policy enforcement','High','Data Chapter Lead'],
+  ['Data Architecture','3','Defined','Modern data stack deployed: Snowflake + Airflow + dbt + Power BI on AWS/Azure.','Full cloud data platform; multi-client deployments proven','Streaming/event-driven not yet standardized','Medium','Data Architect'],
+  ['Data Engineering','3','Defined','Standardized ELT pipelines with dbt; CI/CD via GitHub Actions; Airflow orchestration.','Strong pipeline automation; dbt adoption across projects','Cost tracking per pipeline not yet in place','Medium','Data Engineering Lead'],
+  ['Data Quality','2','Managed','Basic null/row-count checks in pipelines; quality issues tracked in Jira.','Checks present in most pipelines','No automated DQ scoring or dashboards','High','Data Quality Lead'],
+  ['Analytics & BI','3','Defined','Self-service Power BI dashboards; semantic layer partially defined; served 10+ clients.','Strong BI delivery track record; certified Power BI team','No unified metrics catalog; limited NLP querying','Medium','BI Lead'],
+  ['AI & Machine Learning','3','Defined','ML models in production (NIKE, VinID); MLflow experiments; SageMaker deployments.','Proven ML delivery (demand forecast 91% accuracy, churn prediction)','No formal feature store; limited responsible AI framework','High','ML Chapter Lead'],
+  ['Data Security','2','Managed','Basic RBAC on cloud platforms; some data masking; GDPR awareness training done.','AWS IAM, Cognito deployed; basic masking','No SIEM; no automated threat detection; no PDPA audit trail','High','Security Lead'],
+  ['DataOps & MLOps','3','Defined','CI/CD via GitHub Actions; Terraform IaC; Docker containers; basic monitoring.','Reproducible infra deployments; containerized services','No full observability stack; no DORA metrics tracking','Medium','DevOps Lead'],
+];
+
+// =============================================
+//  TAB SWITCHING
+// =============================================
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// =============================================
+//  LOAD DATA FROM GOOGLE SHEETS
+// =============================================
+async function loadData() {
+  const sheetId = document.getElementById('sheetId').value.trim();
+  if (!sheetId || sheetId === 'YOUR_SHEET_ID_HERE') {
+    showStatus('error', '❌ Please enter a valid Google Sheet ID first.');
+    return;
+  }
+
+  showStatus('loading', '<div class="spinner"></div> Connecting to Google Sheets...');
+  document.getElementById('loadBtn').disabled = true;
+
+  try {
+    const [standardData, smartoscData] = await Promise.all([
+      fetchSheetCSV(sheetId, 'Standard'),
+      fetchSheetCSV(sheetId, 'SmartOSC-Current'),
+    ]);
+    renderStandard(standardData);
+    renderSmartOSC(smartoscData);
+    showStatus('success', '✅ Data loaded successfully from Google Sheets!');
+  } catch (err) {
+    showStatus('error', '❌ Failed to load: ' + err.message + '. Check Sheet ID and make sure the sheet is published.');
+    console.error(err);
+  } finally {
+    document.getElementById('loadBtn').disabled = false;
+  }
+}
+
+async function fetchSheetCSV(sheetId, sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} on sheet "${sheetName}"`);
+  const text = await resp.text();
+  return parseCSV(text);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  return lines.slice(1).map(line => { // skip header
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    return cols;
+  }).filter(row => row.some(c => c.length > 0));
+}
+
+// =============================================
+//  LOAD SAMPLE DATA
+// =============================================
+function loadSampleData() {
+  showStatus('success', '🧪 Sample data loaded successfully! This is demo data for illustration.');
+  renderStandard(SAMPLE_STANDARD);
+  renderSmartOSC(SAMPLE_SMARTOSC);
+}
+
+// =============================================
+//  RENDER STANDARD TAB
+// =============================================
+function renderStandard(data) {
+  // data cols: [Domain, Level, LevelName, Description, KeyActivities, Tools, KPIs]
+  const container = document.getElementById('standardContent');
+
+  // Group by domain
+  const domains = {};
+  data.forEach(row => {
+    const domain = row[0] || 'Uncategorized';
+    if (!domains[domain]) domains[domain] = [];
+    domains[domain].push(row);
+  });
+
+  let html = '';
+
+  // Level Legend
+  html += '<div class="level-legend">';
+  for (const [lvl, cfg] of Object.entries(LEVEL_CONFIG)) {
+    html += `<div class="legend-item" style="background:${cfg.bg};border-color:${cfg.border};color:${cfg.color}">
+      <span class="legend-dot" style="background:${cfg.color}"></span>
+      ${cfg.label}
+    </div>`;
+  }
+  html += '</div>';
+
+  // Full Table View
+  html += `<div class="table-section">
+    <div class="section-title">
+      <div class="title-icon" style="background:#eff6ff">📋</div>
+      Framework Overview Table
+    </div>
+    <div class="table-wrapper">
+      <div class="table-header-bar">
+        <h3>📊 Data Capability Levels — All Domains</h3>
+        <span class="table-meta">${data.length} entries across ${Object.keys(domains).length} domains</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Domain</th><th>Level</th><th>Level Name</th>
+              <th>Description</th><th>Key Activities</th>
+              <th>Tools & Technologies</th><th>KPIs / Metrics</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+  data.forEach(row => {
+    const [domain, level, levelName, desc, activities, tools, kpis] = row;
+    const lvlNum = parseInt(level) || 1;
+    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
+    const icon = DOMAIN_ICONS[domain] || '📌';
+    const toolTags = (tools || '').split(',').map(t => t.trim()).filter(Boolean)
+      .map(t => `<span class="tag">${t}</span>`).join('');
+
+    html += `<tr>
+      <td><strong>${icon} ${domain}</strong></td>
+      <td><span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum}</span></td>
+      <td style="font-weight:600;color:${cfg.color}">${levelName || ''}</td>
+      <td style="max-width:220px;font-size:12.5px;color:#4b5563">${desc || ''}</td>
+      <td style="max-width:220px;font-size:12.5px;color:#4b5563">${activities || ''}</td>
+      <td style="max-width:180px">${toolTags}</td>
+      <td style="font-size:12.5px;color:#4b5563">${kpis || ''}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div></div>`;
+
+  // Capability Cards per Domain
+  html += `<div class="section-title" style="margin-top:36px">
+    <div class="title-icon" style="background:#f0fdf4">🗂️</div>
+    Domain Deep Dive Cards
+  </div>
+  <div class="capability-grid">`;
+
+  for (const [domain, rows] of Object.entries(domains)) {
+    const icon = DOMAIN_ICONS[domain] || '📌';
+    html += `<div class="cap-card">
+      <div class="cap-card-header">
+        <span class="cap-card-icon">${icon}</span>
+        <span class="cap-card-title">${domain}</span>
+      </div>
+      <div class="cap-card-body">`;
+
+    rows.sort((a, b) => parseInt(a[1]) - parseInt(b[1])).forEach(row => {
+      const lvlNum = parseInt(row[1]) || 1;
+      const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
+      html += `<div class="cap-level-row">
+        <div class="cap-level-num" style="background:${cfg.bg};color:${cfg.color}">${lvlNum}</div>
+        <div class="cap-level-info">
+          <h4 style="color:${cfg.color}">${row[2] || ''}</h4>
+          <p>${row[3] || ''}</p>
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// =============================================
+//  RENDER SMARTOSC TAB
+// =============================================
+function renderSmartOSC(data) {
+  // cols: [Domain, CurrentLevel, LevelName, Evidence, KeyStrengths, GapToNext, Priority, Owner]
+  const container = document.getElementById('smartoscContent');
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No SmartOSC-Current data found.</p></div>`;
+    return;
+  }
+
+  const validRows = data.filter(r => r[0] && r[1]);
+  const avgLevel = (validRows.reduce((s, r) => s + (parseInt(r[1]) || 0), 0) / validRows.length).toFixed(1);
+  const highPriCount = validRows.filter(r => (r[6]||'').toLowerCase() === 'high').length;
+  const level5Count = validRows.filter(r => parseInt(r[1]) >= 4).length;
+
+  // Summary Cards
+  let html = `
+    <div class="section-title">
+      <div class="title-icon" style="background:#fef3c7">📈</div>
+      SmartOSC Data Maturity Overview
+    </div>
+    <div class="summary-cards">
+      <div class="sum-card">
+        <div class="sum-value" style="color:var(--primary)">${avgLevel}</div>
+        <div class="sum-label">Average Maturity Level</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-value" style="color:#16a34a">${validRows.length}</div>
+        <div class="sum-label">Domains Assessed</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-value" style="color:#dc2626">${highPriCount}</div>
+        <div class="sum-label">High Priority Gaps</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-value" style="color:#7c3aed">${level5Count}</div>
+        <div class="sum-label">Domains at Level 4+</div>
+      </div>
+    </div>`;
+
+  // Maturity Radar (visual progress bars)
+  html += `
+    <div class="section-title">
+      <div class="title-icon" style="background:#f0f9ff">📡</div>
+      Maturity Level by Domain
+    </div>
+    <div class="table-wrapper" style="margin-bottom:32px">
+      <div style="padding:20px 24px">`;
+
+  validRows.forEach(row => {
+    const domain = row[0], lvlNum = parseInt(row[1]) || 1;
+    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
+    const icon = DOMAIN_ICONS[domain] || '📌';
+    const pct = (lvlNum / 5) * 100;
+    html += `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;align-items:center">
+          <span style="font-size:13px;font-weight:600">${icon} ${domain}</span>
+          <span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum} – ${row[2] || cfg.label}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:${pct}%;background:${cfg.color}"></div>
+          </div>
+          <span class="progress-label">${lvlNum}/5</span>
+        </div>
+      </div>`;
+  });
+  html += `</div></div>`;
+
+  // Detail Table
+  html += `
+    <div class="section-title">
+      <div class="title-icon" style="background:#fdf4ff">🔍</div>
+      Detailed Assessment
+    </div>
+    <div class="table-wrapper">
+      <div class="table-header-bar">
+        <h3>🏢 SmartOSC Current State — Domain Assessment</h3>
+        <span class="table-meta">${validRows.length} domains assessed</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Domain</th><th>Current Level</th><th>Evidence / Notes</th>
+              <th>Key Strengths</th><th>Gap to Next Level</th>
+              <th>Priority</th><th>Owner</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+  const priorityColors = { 'high': '#dc2626', 'medium': '#d97706', 'low': '#16a34a' };
+
+  validRows.forEach(row => {
+    const [domain, level, levelName, evidence, strengths, gap, priority, owner] = row;
+    const lvlNum = parseInt(level) || 1;
+    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
+    const icon = DOMAIN_ICONS[domain] || '📌';
+    const priLower = (priority || '').toLowerCase();
+    const priColor = priorityColors[priLower] || '#6b7280';
+
+    html += `<tr>
+      <td><strong>${icon} ${domain}</strong></td>
+      <td>
+        <span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum}</span>
+        <div style="font-size:11px;color:${cfg.color};margin-top:3px;font-weight:600">${levelName || ''}</div>
+      </td>
+      <td style="font-size:12.5px;color:#4b5563;max-width:200px">${evidence || '—'}</td>
+      <td style="font-size:12.5px;color:#059669;max-width:180px">${strengths ? '✅ ' + strengths : '—'}</td>
+      <td style="font-size:12.5px;color:#b45309;max-width:180px">${gap ? '🎯 ' + gap : '—'}</td>
+      <td>
+        <span style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;
+          background:${priColor}1a;color:${priColor};border:1px solid ${priColor}44">
+          ${priority || '—'}
+        </span>
+      </td>
+      <td style="font-size:12.5px;font-weight:600;color:var(--primary)">${owner || '—'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+  container.innerHTML = html;
+}
+
+// =============================================
+//  STATUS BAR
+// =============================================
+function showStatus(type, msg) {
+  const bar = document.getElementById('statusBar');
+  bar.className = `status-bar ${type}`;
+  bar.innerHTML = msg;
+  bar.style.display = 'flex';
+}
+
+// =============================================
+//  SCROLL TOP BUTTON
+// =============================================
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTop');
+  btn.classList.toggle('visible', window.scrollY > 300);
+});
+
+// Auto-load sample on first visit
+window.addEventListener('DOMContentLoaded', () => {
+  loadSampleData();
+});
+</script>
+</body>
+</html>
