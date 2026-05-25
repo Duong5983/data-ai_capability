@@ -5,38 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartOSC — Data Capability Statement</title>
   <style>
-    /* ══════════════════════════════════════
-       RESET & TOKENS
-    ══════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --c-brand:       #1a73e8;
-      --c-brand-dk:    #1557b0;
-      --c-brand-lt:    #e8f0fe;
-      --c-bg:          #f0f4f9;
-      --c-surface:     #ffffff;
-      --c-border:      #e2e8f0;
-      --c-text:        #1e293b;
-      --c-muted:       #64748b;
-      --c-success:     #16a34a;
-      --c-warn:        #d97706;
-      --c-danger:      #dc2626;
-      --c-purple:      #7c3aed;
-      --radius-sm:     8px;
-      --radius-md:     12px;
-      --radius-lg:     16px;
-      --shadow-sm:     0 1px 6px rgba(0,0,0,0.06);
-      --shadow-md:     0 4px 16px rgba(0,0,0,0.09);
-      --shadow-lg:     0 12px 40px rgba(0,0,0,0.13);
-      --nav-h:         60px;
+      --c-brand:    #1a73e8;
+      --c-brand-dk: #1557b0;
+      --c-brand-lt: #e8f0fe;
+      --c-bg:       #f0f4f9;
+      --c-surface:  #ffffff;
+      --c-border:   #e2e8f0;
+      --c-text:     #1e293b;
+      --c-muted:    #64748b;
+      --c-danger:   #dc2626;
+      --radius-sm:  8px;
+      --radius-md:  12px;
+      --radius-lg:  16px;
+      --shadow-sm:  0 1px 6px rgba(0,0,0,0.06);
+      --shadow-md:  0 4px 16px rgba(0,0,0,0.09);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,0.13);
     }
     html { scroll-behavior: smooth; font-size: 14px; }
-    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-           background: var(--c-bg); color: var(--c-text); min-height: 100vh; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--c-bg); color: var(--c-text); min-height: 100vh; }
 
-    /* ══════════════════════════════════════
-       FULL-SCREEN OVERLAYS
-    ══════════════════════════════════════ */
     .overlay {
       position: fixed; inset: 0; z-index: 900;
       display: flex; align-items: center; justify-content: center;
@@ -45,10 +34,9 @@
     }
     .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    /* ── Login card ── */
     .login-card {
       background: var(--c-surface); border-radius: 24px;
-      padding: 52px 48px; max-width: 460px; width: 92%;
+      padding: 48px 44px; max-width: 440px; width: 92%;
       box-shadow: 0 32px 80px rgba(0,0,0,0.4);
       text-align: center; position: relative; overflow: hidden;
     }
@@ -56,386 +44,200 @@
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
       background: linear-gradient(90deg, #1a73e8, #34a853, #fbbc04, #ea4335);
     }
-    .login-logo { font-size: 56px; margin-bottom: 6px; }
-    .login-brand {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      color: var(--c-brand); text-transform: uppercase; margin-bottom: 14px;
-    }
-    .login-card h1 { font-size: 22px; font-weight: 800; color: var(--c-text); margin-bottom: 8px; }
-    .login-card .subtitle { font-size: 13.5px; color: var(--c-muted); line-height: 1.65; margin-bottom: 28px; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
-    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--c-border); }
-    .divider span { font-size: 11px; color: var(--c-muted); font-weight: 600; white-space: nowrap; }
-
-    /* Google sign-in button */
+    .login-logo  { font-size: 52px; margin-bottom: 6px; }
+    .login-brand { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--c-brand); text-transform: uppercase; margin-bottom: 12px; }
+    .login-card h1 { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+    .login-card .subtitle { font-size: 13px; color: var(--c-muted); line-height: 1.65; margin-bottom: 26px; }
+    .init-status { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--c-muted); margin-bottom: 18px; min-height: 22px; }
+    .init-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; transition: background .3s; }
+    .init-dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
+    .init-dot.done    { background: #22c55e; }
+    .init-dot.error   { background: #ef4444; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
     .btn-google {
       display: flex; align-items: center; justify-content: center; gap: 12px;
-      width: 100%; padding: 14px 20px;
-      background: #fff; color: var(--c-text);
+      width: 100%; padding: 14px 20px; background: #fff; color: var(--c-text);
       border: 2px solid var(--c-border); border-radius: var(--radius-md);
       font-size: 15px; font-weight: 600; cursor: pointer;
       transition: all .2s; box-shadow: var(--shadow-sm);
     }
-    .btn-google:hover:not(:disabled) {
-      border-color: var(--c-brand);
-      box-shadow: 0 4px 20px rgba(26,115,232,.22);
-      transform: translateY(-1px);
-    }
-    .btn-google:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-google:hover:not(:disabled) { border-color: var(--c-brand); box-shadow: 0 4px 20px rgba(26,115,232,.22); transform: translateY(-1px); }
+    .btn-google:disabled { opacity: .5; cursor: not-allowed; }
     .btn-google .g-icon { width: 22px; height: 22px; flex-shrink: 0; }
-    .login-footer { margin-top: 20px; font-size: 11.5px; color: #94a3b8; line-height: 1.6; }
+    .login-footer { margin-top: 18px; font-size: 11.5px; color: #94a3b8; line-height: 1.6; }
+    .error-hint { display: none; margin-top: 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: #b91c1c; text-align: left; line-height: 1.6; }
+    .error-hint.show { display: block; }
 
-    /* ── Access Denied card ── */
     .denied-card {
       background: var(--c-surface); border-radius: 24px;
-      padding: 52px 48px; max-width: 460px; width: 92%;
+      padding: 48px 44px; max-width: 440px; width: 92%;
       box-shadow: 0 32px 80px rgba(0,0,0,0.4);
       text-align: center; position: relative; overflow: hidden;
     }
-    .denied-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
-      background: linear-gradient(90deg, #dc2626, #f97316);
-    }
-    .denied-icon { font-size: 56px; margin-bottom: 16px; }
-    .denied-card h2 { font-size: 20px; font-weight: 800; color: var(--c-danger); margin-bottom: 10px; }
-    .denied-card p { font-size: 13.5px; color: var(--c-muted); line-height: 1.7; margin-bottom: 22px; }
-    .denied-card .contact-box {
-      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm);
-      padding: 14px 18px; margin-bottom: 22px; text-align: left;
-    }
-    .denied-card .contact-box p { margin: 0; font-size: 13px; color: var(--c-danger); }
-    .btn-retry {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 26px; background: #fef2f2; color: var(--c-danger);
-      border: 1.5px solid #fca5a5; border-radius: var(--radius-sm);
-      font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .2s;
-    }
+    .denied-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #dc2626, #f97316); }
+    .denied-icon { font-size: 52px; margin-bottom: 14px; }
+    .denied-card h2 { font-size: 19px; font-weight: 800; color: var(--c-danger); margin-bottom: 10px; }
+    .denied-card p  { font-size: 13px; color: var(--c-muted); line-height: 1.7; margin-bottom: 18px; }
+    .denied-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 18px; text-align: left; }
+    .denied-box p { margin: 0; font-size: 13px; color: var(--c-danger); }
+    .btn-retry { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: #fef2f2; color: var(--c-danger); border: 1.5px solid #fca5a5; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .btn-retry:hover { background: #fee2e2; transform: translateY(-1px); }
 
-    /* ══════════════════════════════════════
-       TOP NAV
-    ══════════════════════════════════════ */
-    .topnav {
-      height: var(--nav-h);
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1a73e8 100%);
-      display: flex; align-items: center; padding: 0 32px; gap: 16px;
-      box-shadow: 0 2px 16px rgba(0,0,0,.25);
-      position: sticky; top: 0; z-index: 200;
-    }
-    .topnav-logo { font-size: 24px; }
-    .topnav-titles { flex: 1; }
-    .topnav-titles h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: .2px; }
-    .topnav-titles p  { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
-    .nav-badge {
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .5px; white-space: nowrap;
-    }
-    .user-chip {
-      display: flex; align-items: center; gap: 9px;
-      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
-      border-radius: 24px; padding: 5px 14px 5px 6px;
-    }
-    .user-avatar {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: var(--c-brand); display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0;
-    }
+    .topnav { height: 58px; background: linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#1a73e8 100%); display: flex; align-items: center; padding: 0 28px; gap: 14px; box-shadow: 0 2px 16px rgba(0,0,0,.25); position: sticky; top: 0; z-index: 200; }
+    .topnav-logo { font-size: 22px; }
+    .topnav-info { flex: 1; }
+    .topnav-info h1 { font-size: 15px; font-weight: 800; color: #fff; }
+    .topnav-info p  { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
+    .nav-badge { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 3px 11px; font-size: 11px; font-weight: 700; color: #fff; }
+    .user-chip { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-radius: 24px; padding: 4px 12px 4px 5px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--c-brand); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0; }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-name { font-size: 12.5px; font-weight: 600; color: #fff;
-                 max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-signout {
-      padding: 7px 15px; background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2); border-radius: var(--radius-sm);
-      color: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer;
-      transition: all .2s; white-space: nowrap;
-    }
-    .btn-signout:hover { background: rgba(220,38,38,.35); border-color: rgba(220,38,38,.5); }
+    .user-name { font-size: 12px; font-weight: 600; color: #fff; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-signout { padding: 6px 14px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: var(--radius-sm); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
+    .btn-signout:hover { background: rgba(220,38,38,.35); }
 
-    /* ══════════════════════════════════════
-       TAB BAR
-    ══════════════════════════════════════ */
-    .tab-bar {
-      background: var(--c-surface); border-bottom: 1px solid var(--c-border);
-      padding: 0 32px; display: flex; gap: 2px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.05);
-      overflow-x: auto;
-    }
-    .tab-btn {
-      padding: 0 22px; height: 52px;
-      border: none; background: transparent;
-      font-size: 13.5px; font-weight: 600; color: var(--c-muted);
-      cursor: pointer; border-bottom: 3px solid transparent;
-      transition: all .2s; display: flex; align-items: center; gap: 8px;
-      white-space: nowrap; flex-shrink: 0;
-    }
+    .tab-bar { background: var(--c-surface); border-bottom: 1px solid var(--c-border); padding: 0 28px; display: flex; gap: 2px; box-shadow: 0 2px 8px rgba(0,0,0,.05); overflow-x: auto; }
+    .tab-btn { padding: 0 20px; height: 50px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: var(--c-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all .2s; display: flex; align-items: center; gap: 7px; white-space: nowrap; flex-shrink: 0; }
     .tab-btn:hover  { color: var(--c-brand); background: #f0f7ff; border-radius: 8px 8px 0 0; }
     .tab-btn.active { color: var(--c-brand); border-bottom-color: var(--c-brand); }
-    .tab-count {
-      background: var(--c-brand-lt); color: var(--c-brand);
-      border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 700;
-    }
+    .tab-count { background: var(--c-brand-lt); color: var(--c-brand); border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
     .tab-btn.active .tab-count { background: var(--c-brand); color: #fff; }
 
-    /* ══════════════════════════════════════
-       MAIN LAYOUT
-    ══════════════════════════════════════ */
-    .app-main { padding: 28px 32px; max-width: 1440px; margin: 0 auto; }
+    .app-main { padding: 26px 28px; max-width: 1440px; margin: 0 auto; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ══════════════════════════════════════
-       STATUS / TOAST
-    ══════════════════════════════════════ */
-    .toast {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 18px; border-radius: var(--radius-sm);
-      font-size: 13px; margin-bottom: 20px; animation: fadeIn .3s ease;
+    .filter-bar {
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: var(--radius-md); padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 20px; box-shadow: var(--shadow-sm);
     }
+    .filter-bar label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--c-muted); white-space: nowrap; }
+    .filter-select { padding: 7px 12px; border: 1px solid var(--c-border); border-radius: var(--radius-sm); font-size: 13px; color: var(--c-text); background: #f9fafb; cursor: pointer; transition: border-color .2s; outline: none; }
+    .filter-select:focus { border-color: var(--c-brand); background: #fff; }
+    .filter-search { flex: 1; min-width: 200px; padding: 7px 12px; border: 1px solid var(--c-border); border-radius: var(--radius-sm); font-size: 13px; color: var(--c-text); background: #f9fafb; transition: border-color .2s; outline: none; }
+    .filter-search:focus { border-color: var(--c-brand); background: #fff; }
+    .filter-count { font-size: 12px; color: var(--c-muted); margin-left: auto; white-space: nowrap; }
+
+    .toast { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 18px; }
     .toast.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
     .toast.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
     .toast.error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-    .toast.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
-    .spinner {
-      width: 15px; height: 15px; border: 2.5px solid currentColor;
-      border-top-color: transparent; border-radius: 50%;
-      animation: spin .7s linear infinite; flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width:14px; height:14px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+    @keyframes spin { to{transform:rotate(360deg)} }
 
-    /* ══════════════════════════════════════
-       SECTION HEADER
-    ══════════════════════════════════════ */
-    .section-hd {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 18px;
-    }
-    .section-hd .icon-box {
-      width: 38px; height: 38px; border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
-    }
-    .section-hd h2 { font-size: 17px; font-weight: 800; }
-    .section-hd p  { font-size: 12.5px; color: var(--c-muted); margin-top: 2px; }
+    .section-hd { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+    .section-hd .icon-box { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .section-hd h2 { font-size: 16px; font-weight: 800; }
+    .section-hd p  { font-size: 12px; color: var(--c-muted); margin-top: 1px; }
 
-    /* ══════════════════════════════════════
-       HERO STATS ROW
-    ══════════════════════════════════════ */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 14px; margin-bottom: 28px;
-    }
-    .stat-card {
-      background: var(--c-surface); border-radius: var(--radius-md);
-      padding: 20px 18px; border: 1px solid var(--c-border);
-      box-shadow: var(--shadow-sm); text-align: center;
-      transition: transform .2s, box-shadow .2s;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fill,minmax(148px,1fr)); gap: 12px; margin-bottom: 22px; }
+    .stat-card { background: var(--c-surface); border-radius: var(--radius-md); padding: 18px 16px; border: 1px solid var(--c-border); box-shadow: var(--shadow-sm); text-align: center; transition: transform .2s,box-shadow .2s; }
     .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-    .stat-card .val { font-size: 30px; font-weight: 900; line-height: 1; margin-bottom: 5px; }
-    .stat-card .lbl { font-size: 11.5px; color: var(--c-muted); font-weight: 600; line-height: 1.4; }
+    .stat-card .val { font-size: 28px; font-weight: 900; line-height: 1; margin-bottom: 5px; }
+    .stat-card .lbl { font-size: 11px; color: var(--c-muted); font-weight: 600; line-height: 1.4; }
 
-    /* ══════════════════════════════════════
-       CAPABILITY STATEMENT CARDS (main view)
-    ══════════════════════════════════════ */
-    .cs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 20px; margin-bottom: 32px;
-    }
-    .cs-card {
-      background: var(--c-surface); border-radius: var(--radius-lg);
-      border: 1px solid var(--c-border); overflow: hidden;
-      box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s;
-      display: flex; flex-direction: column;
-    }
+    .cs-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(360px,1fr)); gap: 18px; margin-bottom: 28px; }
+    .cs-card { background: var(--c-surface); border-radius: var(--radius-lg); border: 1px solid var(--c-border); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .2s,box-shadow .2s; display: flex; flex-direction: column; }
     .cs-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .cs-card-header { padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; color: #fff; }
+    .cs-card-icon { width: 40px; height: 40px; border-radius: 9px; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .cs-card-hinfo { flex: 1; min-width: 0; }
+    .cs-card-hinfo h3 { font-size: 13.5px; font-weight: 800; margin-bottom: 3px; line-height: 1.3; }
+    .cs-card-hinfo .domain-label { font-size: 11px; opacity: .75; }
+    .cs-card-hinfo .level-inline { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; background: rgba(255,255,255,.18); border-radius: 12px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
+    .cs-card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; gap: 11px; }
+    .cs-stmt { background: linear-gradient(135deg,#f8faff,#eff6ff); border-left: 4px solid var(--c-brand); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 11px 14px; }
+    .cs-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--c-brand); margin-bottom: 4px; }
+    .cs-stmt p { font-size: 12.5px; line-height: 1.65; color: var(--c-text); }
+    .cs-row { display: flex; flex-direction: column; gap: 3px; }
+    .cs-row .ci-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--c-muted); }
+    .cs-row .ci-val { font-size: 12.5px; line-height: 1.5; color: var(--c-text); }
+    .cs-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .tag-blue   { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+    .tag-green  { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .cs-card-footer { padding: 11px 18px; border-top: 1px solid var(--c-border); background: #fafbfc; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .footer-levels { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .arrow-lbl { font-size: 11px; color: var(--c-muted); }
 
-    .cs-card-header {
-      padding: 16px 20px; display: flex; align-items: center; gap: 13px;
-      background: linear-gradient(135deg, #0f172a, #1e3a5f);
-      color: #fff;
-    }
-    .cs-card-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      background: rgba(255,255,255,.12);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0;
-    }
-    .cs-card-hinfo h3  { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
-    .cs-card-hinfo p   { font-size: 11.5px; opacity: .7; }
+    .lp { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1.5px solid transparent; }
+    .lv1{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+    .lv2{background:#fff7ed;color:#ea580c;border-color:#fdba74}
+    .lv3{background:#fefce8;color:#ca8a04;border-color:#fde047}
+    .lv4{background:#f0fdf4;color:#16a34a;border-color:#86efac}
+    .lv5{background:#eff6ff;color:#2563eb;border-color:#93c5fd}
+    .pri-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .pri-High  {background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+    .pri-Medium{background:#fff7ed;color:#d97706;border:1px solid #fdba74}
+    .pri-Low   {background:#f0fdf4;color:#16a34a;border:1px solid #86efac}
 
-    .cs-card-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+    .hdr-lv1{background:linear-gradient(135deg,#7f1d1d,#dc2626)}
+    .hdr-lv2{background:linear-gradient(135deg,#7c2d12,#ea580c)}
+    .hdr-lv3{background:linear-gradient(135deg,#713f12,#ca8a04)}
+    .hdr-lv4{background:linear-gradient(135deg,#14532d,#16a34a)}
+    .hdr-lv5{background:linear-gradient(135deg,#1e3a8a,#2563eb)}
+    .hdr-def{background:linear-gradient(135deg,#0f172a,#1e3a5f)}
 
-    /* Statement block */
-    .cs-statement {
-      background: linear-gradient(135deg, #f8faff, #eff6ff);
-      border-left: 4px solid var(--c-brand);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      padding: 12px 15px;
-    }
-    .cs-statement .cs-stmt-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .8px; color: var(--c-brand); margin-bottom: 5px;
-    }
-    .cs-statement p { font-size: 12.5px; color: var(--c-text); line-height: 1.65; }
+    .domain-group-hd { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--c-border); }
+    .domain-group-hd .dg-icon { font-size: 22px; }
+    .domain-group-hd h3 { font-size: 15px; font-weight: 800; }
+    .domain-group-hd .dg-count { font-size: 12px; color: var(--c-muted); margin-left: 4px; }
+    .domain-group-hd .dg-avg { margin-left: auto; }
 
-    /* Info rows */
-    .cs-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .cs-info-item { }
-    .cs-info-item .cs-info-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .6px; color: var(--c-muted); margin-bottom: 5px;
-    }
-    .cs-info-item .cs-info-val {
-      font-size: 12.5px; color: var(--c-text); line-height: 1.5;
-    }
-    .cs-info-item.full { grid-column: 1 / -1; }
-
-    /* Tags */
-    .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
-    .tag {
-      display: inline-block; padding: 2px 10px; border-radius: 12px;
-      font-size: 11px; font-weight: 600;
-    }
-    .tag-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-    .tag-green  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .tag-purple { background: #faf5ff; color: #7c3aed; border: 1px solid #d8b4fe; }
-    .tag-orange { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-
-    /* Level badge on card */
-    .cs-card-footer {
-      padding: 12px 20px; border-top: 1px solid var(--c-border);
-      display: flex; align-items: center; justify-content: space-between;
-      background: #fafbfc;
-    }
-    .level-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 13px; border-radius: 20px;
-      font-size: 12px; font-weight: 700; border: 1.5px solid transparent;
-    }
-    .lv1 { background:#fef2f2; color:#dc2626; border-color:#fca5a5; }
-    .lv2 { background:#fff7ed; color:#ea580c; border-color:#fdba74; }
-    .lv3 { background:#fefce8; color:#ca8a04; border-color:#fde047; }
-    .lv4 { background:#f0fdf4; color:#16a34a; border-color:#86efac; }
-    .lv5 { background:#eff6ff; color:#2563eb; border-color:#93c5fd; }
-    .pri-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
-    }
-    .pri-High   { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; }
-    .pri-Medium { background:#fff7ed; color:#d97706; border:1px solid #fdba74; }
-    .pri-Low    { background:#f0fdf4; color:#16a34a; border:1px solid #86efac; }
-
-    /* ══════════════════════════════════════
-       LEVEL FRAMEWORK — ACCORDION TABLE
-    ══════════════════════════════════════ */
-    .level-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
-    .legend-chip {
-      display: flex; align-items: center; gap: 7px;
-      padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      border: 1.5px solid transparent; cursor: default;
-    }
-    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-    .domain-accordion { margin-bottom: 12px; border-radius: var(--radius-md); overflow: hidden;
-                        border: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
-    .domain-trigger {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 20px; background: linear-gradient(135deg,#1e3a5f,#1a73e8);
-      color: #fff; cursor: pointer; user-select: none;
-      transition: filter .2s;
-    }
-    .domain-trigger:hover { filter: brightness(1.1); }
-    .domain-trigger .d-icon { font-size: 20px; }
-    .domain-trigger .d-name { font-size: 14px; font-weight: 700; flex: 1; }
-    .domain-trigger .d-count { font-size: 12px; opacity: .75; }
-    .domain-trigger .chevron { font-size: 13px; transition: transform .25s; }
-    .domain-accordion.open .chevron { transform: rotate(180deg); }
+    .level-legend { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
+    .legend-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1.5px solid transparent; }
+    .legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .domain-block { margin-bottom: 10px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
+    .domain-trigger { display: flex; align-items: center; gap: 11px; padding: 13px 18px; background: linear-gradient(135deg,#1e3a5f,#1a73e8); color: #fff; cursor: pointer; user-select: none; transition: filter .2s; }
+    .domain-trigger:hover { filter: brightness(1.08); }
+    .domain-trigger .d-icon { font-size: 19px; }
+    .domain-trigger .d-name { font-size: 13.5px; font-weight: 700; flex: 1; }
+    .domain-trigger .d-meta { font-size: 11.5px; opacity: .75; }
+    .domain-trigger .chevron { font-size: 12px; transition: transform .25s; }
+    .domain-block.open .chevron { transform: rotate(180deg); }
     .domain-body { display: none; overflow-x: auto; }
-    .domain-accordion.open .domain-body { display: block; }
-
+    .domain-block.open .domain-body { display: block; }
     .fw-table { width: 100%; border-collapse: collapse; }
-    .fw-table thead th {
-      background: #f8fafc; padding: 10px 14px; text-align: left;
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .5px; color: var(--c-muted); border-bottom: 1px solid var(--c-border);
-      white-space: nowrap;
-    }
+    .fw-table thead th { background: #f8fafc; padding: 9px 13px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--c-muted); border-bottom: 1px solid var(--c-border); white-space: nowrap; }
     .fw-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
     .fw-table tbody tr:last-child { border-bottom: none; }
     .fw-table tbody tr:hover { background: #f8faff; }
-    .fw-table tbody td { padding: 11px 14px; font-size: 12.5px; vertical-align: top; }
+    .fw-table tbody td { padding: 10px 13px; font-size: 12.5px; vertical-align: top; }
 
-    /* ══════════════════════════════════════
-       PROGRESS / RADAR VIEW (SmartOSC tab)
-    ══════════════════════════════════════ */
-    .radar-row {
-      background: var(--c-surface); border-radius: var(--radius-md);
-      border: 1px solid var(--c-border); padding: 22px 24px;
-      box-shadow: var(--shadow-sm); margin-bottom: 28px;
-    }
-    .radar-item { margin-bottom: 18px; }
-    .radar-item:last-child { margin-bottom: 0; }
-    .radar-item-hd {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 7px; flex-wrap: wrap; gap: 6px;
-    }
-    .radar-item-name { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
-    .pbar-wrap { display: flex; align-items: center; gap: 10px; }
-    .pbar-bg { flex: 1; height: 9px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
-    .pbar-fill { height: 100%; border-radius: 5px; transition: width .7s ease; }
-    .pbar-lbl { font-size: 12px; font-weight: 700; color: var(--c-muted); min-width: 28px; text-align: right; }
+    .empty-state { text-align: center; padding: 56px 20px; color: var(--c-muted); }
+    .empty-state .ei { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; line-height: 1.6; }
 
-    /* ══════════════════════════════════════
-       EMPTY STATE
-    ══════════════════════════════════════ */
-    .empty-state { text-align: center; padding: 64px 20px; color: var(--c-muted); }
-    .empty-state .empty-ico { font-size: 52px; margin-bottom: 14px; }
-    .empty-state p { font-size: 15px; line-height: 1.6; }
-
-    /* ══════════════════════════════════════
-       SCROLL TOP
-    ══════════════════════════════════════ */
-    #scrollTop {
-      position: fixed; bottom: 26px; right: 26px;
-      width: 42px; height: 42px; background: var(--c-brand); color: #fff;
-      border: none; border-radius: 50%; font-size: 17px; cursor: pointer;
-      box-shadow: 0 4px 16px rgba(26,115,232,.45);
-      display: none; align-items: center; justify-content: center;
-      transition: all .2s; z-index: 500;
-    }
+    #scrollTop { position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px; background: var(--c-brand); color: #fff; border: none; border-radius: 50%; font-size: 17px; cursor: pointer; box-shadow: 0 4px 14px rgba(26,115,232,.4); display: none; align-items: center; justify-content: center; z-index: 500; transition: all .2s; }
     #scrollTop:hover { background: var(--c-brand-dk); transform: translateY(-2px); }
-    #scrollTop.show { display: flex; }
+    #scrollTop.show  { display: flex; }
 
-    /* ══════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════ */
     @media (max-width: 768px) {
-      .topnav { padding: 0 16px; }
-      .app-main { padding: 16px; }
-      .tab-bar { padding: 0 10px; }
+      .topnav, .app-main, .tab-bar { padding-left: 14px; padding-right: 14px; }
       .cs-grid { grid-template-columns: 1fr; }
-      .cs-info-grid { grid-template-columns: 1fr; }
+      .cs-2col { grid-template-columns: 1fr; }
       .nav-badge { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     OVERLAY 1: LOGIN
-══════════════════════════════════════════ -->
+<!-- ══ LOGIN OVERLAY ══ -->
 <div class="overlay" id="loginOverlay">
   <div class="login-card">
     <div class="login-logo">📊</div>
     <div class="login-brand">SmartOSC · Data & AI</div>
     <h1>Data Capability Statement</h1>
-    <p class="subtitle">
-      Tài liệu này mô tả năng lực dữ liệu và AI của SmartOSC.<br/>
-      Vui lòng đăng nhập bằng tài khoản Google để tiếp tục.
-    </p>
-
+    <p class="subtitle">Vui lòng đăng nhập bằng tài khoản Google để truy cập tài liệu nội bộ.</p>
+    <div class="init-status" id="initStatus">
+      <span class="init-dot loading" id="dot-gapi"></span>
+      <span style="font-size:11px">Sheets API</span>
+      <span class="init-dot loading" id="dot-gis"></span>
+      <span style="font-size:11px">Auth</span>
+    </div>
     <button class="btn-google" id="signInBtn" onclick="handleSignIn()" disabled>
       <svg class="g-icon" viewBox="0 0 48 48">
         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -445,47 +247,28 @@
       </svg>
       <span id="signInBtnText">Đang khởi tạo…</span>
     </button>
-
-    <div class="divider"><span>Thông tin bảo mật</span></div>
-    <p class="login-footer">
-      🔒 Chỉ yêu cầu quyền <strong>đọc</strong> Google Sheets · Không lưu dữ liệu cá nhân<br/>
-      Tài liệu nội bộ — chỉ dành cho thành viên được cấp quyền
-    </p>
+    <div class="error-hint" id="errorHint"></div>
+    <p class="login-footer">🔒 Chỉ yêu cầu quyền <strong>đọc</strong> Google Sheets · Không lưu dữ liệu cá nhân</p>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     OVERLAY 2: ACCESS DENIED
-══════════════════════════════════════════ -->
+<!-- ══ DENIED OVERLAY ══ -->
 <div class="overlay hidden" id="deniedOverlay">
   <div class="denied-card">
     <div class="denied-icon">🔒</div>
     <h2>Không có quyền truy cập</h2>
-    <p>
-      Xin lỗi, đây là tài liệu <strong>nội bộ của SmartOSC</strong>.<br/>
-      Tài khoản của bạn chưa được cấp quyền xem nội dung này.
-    </p>
-    <div class="contact-box">
-      <p>📧 Vui lòng liên hệ <strong>Admin / Data Owner</strong> để được cấp quyền truy cập.</p>
-    </div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:20px">
-      Đã đăng nhập với: <strong id="deniedEmail" style="color:#64748b"></strong>
-    </p>
-    <button class="btn-retry" onclick="handleSignOut()">
-      🔄 Đăng nhập tài khoản khác
-    </button>
+    <p>Xin lỗi, đây là tài liệu <strong>nội bộ của SmartOSC</strong>.<br/>Tài khoản của bạn chưa được cấp quyền xem nội dung này.</p>
+    <div class="denied-box"><p>📧 Vui lòng liên hệ <strong>Admin / Data Owner</strong> để được cấp quyền truy cập.</p></div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:18px">Đã đăng nhập với: <strong id="deniedEmail" style="color:#64748b"></strong></p>
+    <button class="btn-retry" onclick="handleSignOut()">🔄 Đăng nhập tài khoản khác</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     APP SHELL
-══════════════════════════════════════════ -->
+<!-- ══ APP SHELL ══ -->
 <div id="appShell" style="display:none">
-
-  <!-- TOP NAV -->
   <nav class="topnav">
     <div class="topnav-logo">📊</div>
-    <div class="topnav-titles">
+    <div class="topnav-info">
       <h1>Data Capability Statement</h1>
       <p>SmartOSC · Data & AI Practice</p>
     </div>
@@ -497,128 +280,150 @@
     <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
   </nav>
 
-  <!-- TAB BAR -->
   <nav class="tab-bar">
-    <button class="tab-btn active" id="tab-btn-statement" onclick="switchTab('statement',this)">
+    <button class="tab-btn active" onclick="switchTab('statement',this)">
       📋 Capability Statement <span class="tab-count" id="cnt-statement">0</span>
     </button>
-    <button class="tab-btn" id="tab-btn-framework" onclick="switchTab('framework',this)">
+    <button class="tab-btn" onclick="switchTab('framework',this)">
       🏛️ Level Framework <span class="tab-count" id="cnt-framework">0</span>
-    </button>
-    <button class="tab-btn" id="tab-btn-smartosc" onclick="switchTab('smartosc',this)">
-      🏢 SmartOSC Current <span class="tab-count" id="cnt-smartosc">0</span>
     </button>
   </nav>
 
-  <!-- MAIN -->
   <main class="app-main">
     <div id="toastBar" style="display:none"></div>
-
-    <!-- ── TAB: CAPABILITY STATEMENT ── -->
     <div id="tab-statement" class="tab-panel active">
-      <div id="statementContent">
-        <div class="empty-state">
-          <div class="empty-ico">📋</div>
-          <p>Đang tải dữ liệu…</p>
-        </div>
-      </div>
+      <div id="statementContent"><div class="empty-state"><div class="ei">📋</div><p>Đang tải…</p></div></div>
     </div>
-
-    <!-- ── TAB: LEVEL FRAMEWORK ── -->
     <div id="tab-framework" class="tab-panel">
-      <div id="frameworkContent">
-        <div class="empty-state">
-          <div class="empty-ico">🏛️</div>
-          <p>Đang tải dữ liệu…</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── TAB: SMARTOSC CURRENT ── -->
-    <div id="tab-smartosc" class="tab-panel">
-      <div id="smartoscContent">
-        <div class="empty-state">
-          <div class="empty-ico">🏢</div>
-          <p>Đang tải dữ liệu…</p>
-        </div>
-      </div>
+      <div id="frameworkContent"><div class="empty-state"><div class="ei">🏛️</div><p>Đang tải…</p></div></div>
     </div>
   </main>
 </div>
 
-<!-- SCROLL TOP -->
 <button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-
-<!-- ══════════════════════════════════════════
-     GOOGLE APIS
-══════════════════════════════════════════ -->
-<script src="https://apis.google.com/js/api.js"       onload="gapiLoaded()" async defer></script>
-<script src="https://accounts.google.com/gsi/client"  onload="gisLoaded()"  async defer></script>
-
 <script>
-/* ════════════════════════════════════════
-   ⚙️  CONFIG  — chỉ cần thay CLIENT_ID & API_KEY
-════════════════════════════════════════ */
-const CLIENT_ID  = '434220831191-8asl3oqjehj8kr6f4tk4qjgo738s28t8.apps.googleusercontent.com'; // ← thay vào đây
-const API_KEY    = 'AIzaSyC1G2XYAvSLxZn96K0kDotkHUvZgf9GI8o';                               // ← thay vào đây
-const SHEET_ID   = '1t1kOc2iJz8F16e3iPAe144BqVl1UAPfvaCqOUad2fJg'; // cố định
-const DISCOVERY  = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
-const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const CLIENT_ID = '434220831191-8asl3oqjehj8kr6f4tk4qjgo738s28t8.apps.googleusercontent.com';
+const API_KEY   = 'AIzaSyC1G2XYAvSLxZn96K0kDotkHUvZgf9GI8o';
+const SHEET_ID  = '1t1kOc2iJz8F16e3iPAe144BqVl1UAPfvaCqOUad2fJg';
+const DISCOVERY = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════════════
    STATE
-════════════════════════════════════════ */
-let gapiInited = false, gisInited = false, tokenClient;
+══════════════════════════════════════════════ */
+let gapiReady = false, gisReady = false, tokenClient;
 let currentUserEmail = '';
+let allStatementRows = [];
 
-/* ════════════════════════════════════════
-   GAPI / GIS BOOT
-════════════════════════════════════════ */
-function gapiLoaded() {
-  gapi.load('client', async () => {
+/* ══════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Cannot load: ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', bootGoogleAPIs);
+
+async function bootGoogleAPIs() {
+  try {
+    await Promise.all([
+      loadScript('https://apis.google.com/js/api.js'),
+      loadScript('https://accounts.google.com/gsi/client'),
+    ]);
+
+    await new Promise((resolve, reject) => {
+      gapi.load('client', {
+        callback: resolve,
+        onerror:   () => reject(new Error('gapi.load failed')),
+        timeout:   10000,
+        ontimeout: () => reject(new Error('gapi.load timed out')),
+      });
+    });
+
     await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY] });
-    gapiInited = true;
-    maybeReady();
-  });
+    gapiReady = true;
+    setDot('gapi', 'done');
+
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: onTokenResponse,
+      error_callback: err => showErrorHint(`OAuth error: ${err.type || JSON.stringify(err)}`),
+    });
+    gisReady = true;
+    setDot('gis', 'done');
+
+    onReady();
+  } catch (err) {
+    console.error('[Boot]', err);
+    handleBootError(err);
+  }
 }
-function gisLoaded() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: onTokenResponse,
-  });
-  gisInited = true;
-  maybeReady();
-}
-function maybeReady() {
-  if (!gapiInited || !gisInited) return;
+
+function onReady() {
   const btn = document.getElementById('signInBtn');
   btn.disabled = false;
   document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
+  document.getElementById('initStatus').style.display = 'none';
 
-  // Restore session
   const saved = sessionStorage.getItem('gapi_token');
   if (saved) {
     try {
-      gapi.client.setToken(JSON.parse(saved));
-      fetchUserAndLoad();
-    } catch(_) { sessionStorage.removeItem('gapi_token'); }
+      const token = JSON.parse(saved);
+      if (Date.now() < (token.expires_at || 0)) {
+        gapi.client.setToken(token);
+        fetchUserAndLoad(); return;
+      }
+    } catch(_) {}
+    sessionStorage.removeItem('gapi_token');
   }
 }
 
-/* ════════════════════════════════════════
-   AUTH FLOW
-════════════════════════════════════════ */
-function handleSignIn() {
+function handleBootError(err) {
+  const msg = err.message || String(err);
+  let hint = '';
+  if (msg.includes('Cannot load'))
+    hint = '⚠️ Không thể tải thư viện Google. Kiểm tra kết nối mạng hoặc tắt ad-blocker.';
+  else if (msg.includes('origin') || msg.includes('idpiframe'))
+    hint = `⚠️ Domain <strong>${location.origin}</strong> chưa được thêm vào "Authorized JavaScript origins" trong Google Cloud Console.`;
+  else
+    hint = `⚠️ Lỗi khởi tạo: ${msg}. Mở F12 → Console để xem chi tiết.`;
+
+  if (!gapiReady) setDot('gapi', 'error');
+  if (!gisReady)  setDot('gis',  'error');
+  showErrorHint(hint);
+
   const btn = document.getElementById('signInBtn');
-  btn.disabled = true;
-  document.getElementById('signInBtnText').textContent = 'Đang xác thực…';
-  if (gapi.client.getToken() === null) {
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  } else {
-    tokenClient.requestAccessToken({ prompt: '' });
+  btn.disabled = false;
+  document.getElementById('signInBtnText').textContent = '🔄 Thử lại';
+  btn.onclick = () => location.reload();
+}
+
+/* ══════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════ */
+function handleSignIn() {
+  if (!gapiReady || !gisReady) {
+    showErrorHint('⚠️ Thư viện chưa sẵn sàng. Vui lòng đợi hoặc tải lại trang.');
+    return;
   }
+  document.getElementById('signInBtn').disabled = true;
+  document.getElementById('signInBtnText').textContent = 'Đang xác thực…';
+  document.getElementById('errorHint').classList.remove('show');
+  tokenClient.requestAccessToken(
+    gapi.client.getToken() ? { prompt: '' } : { prompt: 'select_account' }
+  );
 }
 
 async function onTokenResponse(resp) {
@@ -626,500 +431,350 @@ async function onTokenResponse(resp) {
   btn.disabled = false;
   document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
   if (resp.error) {
-    console.error(resp);
-    showToast('error', '❌ Đăng nhập thất bại: ' + (resp.error_description || resp.error));
+    if (resp.error === 'access_denied' || resp.error === 'user_cancelled') return;
+    showErrorHint(`❌ Đăng nhập thất bại: ${resp.error_description || resp.error}`);
     return;
   }
-  sessionStorage.setItem('gapi_token', JSON.stringify(gapi.client.getToken()));
+  const token = gapi.client.getToken();
+  token.expires_at = Date.now() + (token.expires_in || 3600) * 1000;
+  sessionStorage.setItem('gapi_token', JSON.stringify(token));
   await fetchUserAndLoad();
 }
 
 async function fetchUserAndLoad() {
-  // 1. Get user profile
   try {
     const token = gapi.client.getToken();
     const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
       { headers: { Authorization: `Bearer ${token.access_token}` } });
-    if (res.ok) {
-      const info = await res.json();
-      currentUserEmail = info.email || '';
-      renderUserChip(info);
-    }
+    if (res.ok) { const info = await res.json(); currentUserEmail = info.email||''; renderUserChip(info); }
   } catch(_) {}
-
-  // 2. Try loading the sheet — this is the permission gate
   await loadSheetData();
-}
-
-/* ════════════════════════════════════════
-   PERMISSION-GATED SHEET LOAD
-════════════════════════════════════════ */
-async function loadSheetData() {
-  showLoginOverlay(false);
-  showApp(true);
-  showToast('loading', '<div class="spinner"></div> Đang tải dữ liệu từ Google Sheets…');
-
-  try {
-    // Fetch all 3 sheets in parallel
-    const [stmtResp, fwResp, soResp] = await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Statement!A2:Z' }),
-      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Standard!A2:G'  }),
-      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'SmartOSC-Current!A2:H' }),
-    ]);
-
-    const stmtRows = stmtResp.result.values || [];
-    const fwRows   = fwResp.result.values   || [];
-    const soRows   = soResp.result.values   || [];
-
-    renderStatement(stmtRows);
-    renderFramework(fwRows);
-    renderSmartOSC(soRows);
-
-    showToast('success', `✅ Tải thành công — ${stmtRows.length} capability statements, ${fwRows.length} framework rows, ${soRows.length} current-state rows.`);
-
-  } catch (err) {
-    console.error(err);
-    const code = err?.result?.error?.status || err?.result?.error?.code || '';
-    const msg  = err?.result?.error?.message || err.message || '';
-
-    // ── ACCESS DENIED ──
-    if (code === 'PERMISSION_DENIED' || msg.includes('403') || msg.toLowerCase().includes('permission')) {
-      showApp(false);
-      showDenied(true);
-      return;
-    }
-    // ── OTHER ERROR ──
-    showToast('error', `❌ Lỗi tải dữ liệu: ${msg || 'Không xác định'}. Kiểm tra tên các sheet tab.`);
-  }
 }
 
 function handleSignOut() {
   const token = gapi.client.getToken();
-  if (token) {
-    try { google.accounts.oauth2.revoke(token.access_token, ()=>{}); } catch(_){}
-    gapi.client.setToken('');
+  if (token?.access_token) {
+    try { google.accounts.oauth2.revoke(token.access_token, ()=>{}); } catch(_) {}
   }
+  gapi.client.setToken('');
   sessionStorage.removeItem('gapi_token');
   currentUserEmail = '';
-  showApp(false);
-  showDenied(false);
-  showLoginOverlay(true);
+  allStatementRows = [];
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('deniedOverlay').classList.add('hidden');
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('signInBtn').disabled = false;
   document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
+  document.getElementById('initStatus').style.display = 'none';
+  document.getElementById('userChip').style.display = 'none';
+  document.getElementById('errorHint').classList.remove('show');
 }
 
-/* ── overlay helpers ── */
-function showLoginOverlay(show) {
-  document.getElementById('loginOverlay').classList.toggle('hidden', !show);
-}
-function showDenied(show) {
-  document.getElementById('deniedOverlay').classList.toggle('hidden', !show);
-  if (show) document.getElementById('deniedEmail').textContent = currentUserEmail;
-}
-function showApp(show) {
-  document.getElementById('appShell').style.display = show ? 'block' : 'none';
-}
+/* ══════════════════════════════════════════════
+   SHEET LOAD
+══════════════════════════════════════════════ */
+async function loadSheetData() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('appShell').style.display = 'block';
+  showToast('loading', '<div class="spinner"></div> Đang tải dữ liệu từ Google Sheets…');
 
-/* ── user chip ── */
-function renderUserChip(info) {
-  const chip   = document.getElementById('userChip');
-  const avatar = document.getElementById('userAvatar');
-  const name   = document.getElementById('userName');
-  chip.style.display = 'flex';
-  name.textContent   = info.name || info.email || 'User';
-  if (info.picture) {
-    avatar.innerHTML = `<img src="${info.picture}" alt="" referrerpolicy="no-referrer">`;
-  } else {
-    avatar.textContent = (info.name || info.email || 'U')[0].toUpperCase();
+  try {
+    const [r1, r2] = await Promise.all([
+      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Statement!A2:L' }),
+      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Standard!A2:G'  }),
+    ]);
+
+    allStatementRows = r1.result.values || [];
+    const fwRows     = r2.result.values || [];
+
+    renderStatement(allStatementRows);
+    renderFramework(fwRows);
+
+    showToast('success',
+      `✅ Tải thành công — ${allStatementRows.length} capability statements · ${fwRows.length} framework entries.`
+    );
+  } catch (err) {
+    console.error('[Sheet]', err);
+    const code = err?.result?.error?.code;
+    const msg  = err?.result?.error?.message || err.message || '';
+    if (code === 403 || msg.includes('403') || msg.toLowerCase().includes('permission')) {
+      document.getElementById('appShell').style.display = 'none';
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('deniedEmail').textContent = currentUserEmail;
+      document.getElementById('deniedOverlay').classList.remove('hidden');
+    } else {
+      showToast('error', `❌ Lỗi: ${msg || 'Không xác định'}. Kiểm tra tên tab: "Statement", "Standard".`);
+    }
   }
 }
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CONSTANTS
-════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 const LV = {
-  1:{ label:'Initial',                emoji:'🔴', color:'#dc2626', bg:'#fef2f2', bd:'#fca5a5', cls:'lv1' },
-  2:{ label:'Managed',               emoji:'🟠', color:'#ea580c', bg:'#fff7ed', bd:'#fdba74', cls:'lv2' },
-  3:{ label:'Defined',                emoji:'🟡', color:'#ca8a04', bg:'#fefce8', bd:'#fde047', cls:'lv3' },
-  4:{ label:'Quantitatively Managed', emoji:'🟢', color:'#16a34a', bg:'#f0fdf4', bd:'#86efac', cls:'lv4' },
-  5:{ label:'Optimizing',             emoji:'🔵', color:'#2563eb', bg:'#eff6ff', bd:'#93c5fd', cls:'lv5' },
+  1:{label:'Initial',                emoji:'🔴',color:'#dc2626',bg:'#fef2f2',bd:'#fca5a5',cls:'lv1',hdr:'hdr-lv1'},
+  2:{label:'Managed',               emoji:'🟠',color:'#ea580c',bg:'#fff7ed',bd:'#fdba74',cls:'lv2',hdr:'hdr-lv2'},
+  3:{label:'Defined',                emoji:'🟡',color:'#ca8a04',bg:'#fefce8',bd:'#fde047',cls:'lv3',hdr:'hdr-lv3'},
+  4:{label:'Quantitatively Managed', emoji:'🟢',color:'#16a34a',bg:'#f0fdf4',bd:'#86efac',cls:'lv4',hdr:'hdr-lv4'},
+  5:{label:'Optimizing',             emoji:'🔵',color:'#2563eb',bg:'#eff6ff',bd:'#93c5fd',cls:'lv5',hdr:'hdr-lv5'},
 };
 const D_ICON = {
   'Data Governance':'🏛️','Data Architecture':'🏗️','Data Engineering':'⚙️',
   'Data Quality':'✅','Analytics & BI':'📊','AI & Machine Learning':'🤖',
   'Data Security':'🔒','DataOps & MLOps':'🔄',
 };
-function dvIcon(d) { return D_ICON[d] || '📌'; }
-function lvCfg(n)  { return LV[Math.min(Math.max(parseInt(n)||1,1),5)]; }
+const dvIcon = d => D_ICON[d] || '📌';
+const lvCfg  = n => LV[Math.min(Math.max(parseInt(n)||1,1),5)];
 
-/* ════════════════════════════════════════
-   TAB SWITCH
-════════════════════════════════════════ */
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
-}
-
-/* ════════════════════════════════════════
-   TOAST
-════════════════════════════════════════ */
-function showToast(type, msg) {
-  const bar = document.getElementById('toastBar');
-  bar.className = `toast ${type}`;
-  bar.innerHTML = msg;
-  bar.style.display = 'flex';
-}
-
-/* ════════════════════════════════════════
-   RENDER: CAPABILITY STATEMENT TAB
-   Expected columns (sheet "Statement"):
-   A: Domain
-   B: Capability Area
-   C: Capability Statement (the main text)
-   D: Current Level (1-5)
-   E: Evidence / Examples
-   F: Key Technologies
-   G: Industries Served
-   H: Target Level
-   I: Gap / Improvement Plan
-   J: Priority (High/Medium/Low)
-   K: Owner
-════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   RENDER: CAPABILITY STATEMENT
+   A=Domain B=Area C=Statement D=CurLv
+   E=KeyStrengths F=Evidence G=Technologies
+   H=Industries I=TargetLv J=Gap K=Priority L=Owner
+══════════════════════════════════════════════ */
 function renderStatement(rows) {
-  const el = document.getElementById('statementContent');
-  const valid = rows.filter(r => r[0] || r[1] || r[2]);
+  const el    = document.getElementById('statementContent');
+  const valid = rows.filter(r => r && (r[0]||r[1]||r[2]));
   document.getElementById('cnt-statement').textContent = valid.length;
 
   if (!valid.length) {
-    el.innerHTML = emptyState('📋', 'Sheet "Statement" chưa có dữ liệu hoặc chưa tồn tại.');
+    el.innerHTML = emptyHTML('📋',
+      'Sheet "Statement" chưa có dữ liệu.<br/><small style="font-size:12px">Cấu trúc cột: A=Domain · B=Capability Area · C=Statement · D=Current Level · E=Key Strengths · F=Evidence · G=Technologies · H=Industries · I=Target Level · J=Gap · K=Priority · L=Owner</small>');
     return;
   }
 
-  // Group by Domain
-  const domains = {};
-  valid.forEach(r => {
-    const d = (r[0]||'').trim() || 'General';
-    if (!domains[d]) domains[d] = [];
-    domains[d].push(r);
-  });
-
-  // Summary stats
-  const avgLv = (valid.reduce((s,r)=>s+(parseInt(r[3])||0),0)/valid.length).toFixed(1);
-  const highCount = valid.filter(r=>(r[9]||'').toLowerCase()==='high').length;
-  const l4plus    = valid.filter(r=>parseInt(r[3])>=4).length;
-  const domCount  = Object.keys(domains).length;
+  const avgLv   = avg(valid, r => parseInt(r[3])||0);
+  const highCnt = valid.filter(r => (r[10]||'').toLowerCase()==='high').length;
+  const l4plus  = valid.filter(r => parseInt(r[3])>=4).length;
+  const domains = groupBy(valid, r => (r[0]||'').trim()||'General');
 
   let html = `
     <div class="stats-row">
       <div class="stat-card"><div class="val" style="color:var(--c-brand)">${valid.length}</div><div class="lbl">Total Capability Statements</div></div>
       <div class="stat-card"><div class="val" style="color:var(--c-brand)">${avgLv}</div><div class="lbl">Average Maturity Level</div></div>
-      <div class="stat-card"><div class="val" style="color:#16a34a">${domCount}</div><div class="lbl">Capability Domains</div></div>
+      <div class="stat-card"><div class="val" style="color:#16a34a">${Object.keys(domains).length}</div><div class="lbl">Capability Domains</div></div>
       <div class="stat-card"><div class="val" style="color:#7c3aed">${l4plus}</div><div class="lbl">Areas at Level 4+</div></div>
-      <div class="stat-card"><div class="val" style="color:#dc2626">${highCount}</div><div class="lbl">High Priority Items</div></div>
+      <div class="stat-card"><div class="val" style="color:#dc2626">${highCnt}</div><div class="lbl">High Priority Items</div></div>
     </div>`;
 
-  // Cards per domain
+  let domainOpts = '<option value="">All Domains</option>';
+  Object.keys(domains).forEach(d => { domainOpts += `<option value="${d}">${dvIcon(d)} ${d}</option>`; });
+  let levelOpts = '<option value="">All Levels</option>';
+  Object.entries(LV).forEach(([n,c]) => { levelOpts += `<option value="${n}">${c.emoji} L${n} – ${c.label}</option>`; });
+  const priorityOpts = '<option value="">All Priority</option><option value="High">🔥 High</option><option value="Medium">⚡ Medium</option><option value="Low">✅ Low</option>';
+
+  html += `
+    <div class="filter-bar">
+      <label>Filter:</label>
+      <select class="filter-select" id="fDomain" onchange="applyFilter()">${domainOpts}</select>
+      <select class="filter-select" id="fLevel"  onchange="applyFilter()">${levelOpts}</select>
+      <select class="filter-select" id="fPri"    onchange="applyFilter()">${priorityOpts}</select>
+      <input  class="filter-search" id="fSearch" placeholder="🔍 Tìm kiếm…" oninput="applyFilter()"/>
+      <span class="filter-count" id="filterCount">${valid.length} items</span>
+    </div>
+    <div id="csCardsWrapper">${buildCards(valid, domains)}</div>`;
+
+  el.innerHTML = html;
+}
+
+function buildCards(valid, domains) {
+  let html = '';
   for (const [domain, domRows] of Object.entries(domains)) {
-    const icon = dvIcon(domain);
+    const icon   = dvIcon(domain);
+    const domAvg = avg(domRows, r => parseInt(r[3])||0);
+    const domCfg = lvCfg(Math.round(parseFloat(domAvg)));
+
     html += `
-      <div class="section-hd" style="margin-top:28px">
-        <div class="icon-box" style="background:#eff6ff">${icon}</div>
-        <div><h2>${domain}</h2><p>${domRows.length} capability statement${domRows.length>1?'s':''}</p></div>
+      <div class="domain-group-hd">
+        <span class="dg-icon">${icon}</span>
+        <h3>${domain}</h3>
+        <span class="dg-count">(${domRows.length} statement${domRows.length>1?'s':''})</span>
+        <div class="dg-avg"><span class="lp ${domCfg.cls}" style="font-size:11px">${domCfg.emoji} Avg L${domAvg}</span></div>
       </div>
       <div class="cs-grid">`;
 
     domRows.forEach(r => {
-      const [domain, area, statement, level, evidence, techs, industries, targetLv, gap, priority, owner] = r;
-      const cfg  = lvCfg(level);
-      const tCfg = targetLv ? lvCfg(targetLv) : null;
-
-      // Build tech tags
-      const techTags = (techs||'').split(',').map(t=>t.trim()).filter(Boolean)
-        .map(t=>`<span class="tag tag-blue">${t}</span>`).join('');
-      const indTags = (industries||'').split(',').map(t=>t.trim()).filter(Boolean)
-        .map(t=>`<span class="tag tag-green">${t}</span>`).join('');
+      const [domain,area,statement,curLv,strengths,evidence,techs,industries,targetLv,gap,priority,owner] = r;
+      const cfg  = lvCfg(curLv);
+      const tCfg = (targetLv && targetLv !== curLv) ? lvCfg(targetLv) : null;
+      const techTags = makeTags(techs, 'tag-blue');
+      const indTags  = makeTags(industries, 'tag-green');
 
       html += `
         <div class="cs-card">
-          <div class="cs-card-header">
+          <div class="cs-card-header ${cfg.hdr||'hdr-def'}">
             <div class="cs-card-icon">${icon}</div>
             <div class="cs-card-hinfo">
               <h3>${area || domain || 'Capability'}</h3>
-              <p>${domain}</p>
+              <div class="domain-label">${domain || ''}</div>
+              <div class="level-inline">${cfg.emoji} Level ${parseInt(curLv)||'?'} · ${cfg.label}</div>
             </div>
           </div>
           <div class="cs-card-body">
-            ${statement ? `
-            <div class="cs-statement">
-              <div class="cs-stmt-label">📌 Capability Statement</div>
-              <p>${statement}</p>
+            ${statement ? `<div class="cs-stmt"><div class="cs-lbl">📌 Capability Statement</div><p>${statement}</p></div>` : ''}
+            ${strengths ? `<div class="cs-row"><div class="ci-lbl">💪 Key Strengths</div><div class="ci-val" style="color:#15803d">${strengths}</div></div>` : ''}
+            ${evidence  ? `<div class="cs-row"><div class="ci-lbl">🏆 Evidence / Examples</div><div class="ci-val">${evidence}</div></div>` : ''}
+            ${(techTags || indTags) ? `
+            <div class="cs-2col">
+              ${techTags ? `<div class="cs-row"><div class="ci-lbl">🔧 Technologies</div><div class="tag-list">${techTags}</div></div>` : ''}
+              ${indTags  ? `<div class="cs-row"><div class="ci-lbl">🏭 Industries</div><div class="tag-list">${indTags}</div></div>`  : ''}
             </div>` : ''}
-
-            <div class="cs-info-grid">
-              ${evidence ? `
-              <div class="cs-info-item full">
-                <div class="cs-info-label">🏆 Evidence / Examples</div>
-                <div class="cs-info-val">${evidence}</div>
-              </div>` : ''}
-
-              ${techTags ? `
-              <div class="cs-info-item full">
-                <div class="cs-info-label">🔧 Key Technologies</div>
-                <div class="tag-list">${techTags}</div>
-              </div>` : ''}
-
-              ${indTags ? `
-              <div class="cs-info-item full">
-                <div class="cs-info-label">🏭 Industries Served</div>
-                <div class="tag-list">${indTags}</div>
-              </div>` : ''}
-
-              ${gap ? `
-              <div class="cs-info-item full">
-                <div class="cs-info-label">🎯 Gap / Improvement Plan</div>
-                <div class="cs-info-val" style="color:#b45309">${gap}</div>
-              </div>` : ''}
-
-              ${owner ? `
-              <div class="cs-info-item">
-                <div class="cs-info-label">👤 Owner</div>
-                <div class="cs-info-val" style="color:var(--c-brand);font-weight:600">${owner}</div>
-              </div>` : ''}
-            </div>
+            ${gap   ? `<div class="cs-row"><div class="ci-lbl">🎯 Gap / Improvement Plan</div><div class="ci-val" style="color:#b45309">${gap}</div></div>` : ''}
+            ${owner ? `<div class="cs-row"><div class="ci-lbl">👤 Owner</div><div class="ci-val" style="color:var(--c-brand);font-weight:600">${owner}</div></div>` : ''}
           </div>
           <div class="cs-card-footer">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span class="level-pill ${cfg.cls}">${cfg.emoji} L${parseInt(level)||'?'} · ${cfg.label}</span>
-              ${tCfg && targetLv !== level ? `<span style="font-size:11px;color:var(--c-muted)">→ Target:</span>
-              <span class="level-pill ${tCfg.cls}">${tCfg.emoji} L${parseInt(targetLv)}</span>` : ''}
+            <div class="footer-levels">
+              <span class="lp ${cfg.cls}">${cfg.emoji} L${parseInt(curLv)||'?'} Current</span>
+              ${tCfg ? `<span class="arrow-lbl">→</span><span class="lp ${tCfg.cls}">${tCfg.emoji} L${parseInt(targetLv)} Target</span>` : ''}
             </div>
-            ${priority ? `<span class="pri-pill pri-${priority}" style="border:1px solid">${priority === 'High' ? '🔥' : priority === 'Medium' ? '⚡' : '✅'} ${priority}</span>` : ''}
+            ${priority ? `<span class="pri-pill pri-${priority}">${priority==='High'?'🔥':priority==='Medium'?'⚡':'✅'} ${priority}</span>` : ''}
           </div>
         </div>`;
     });
     html += '</div>';
   }
-
-  el.innerHTML = html;
+  return html;
 }
 
-/* ════════════════════════════════════════
-   RENDER: LEVEL FRAMEWORK TAB
-   Expected columns (sheet "Standard"):
-   A: Domain  B: Level  C: Level Name
-   D: Description  E: Key Activities
-   F: Tools & Technologies  G: KPIs/Metrics
-════════════════════════════════════════ */
+function applyFilter() {
+  const fDomain = document.getElementById('fDomain').value;
+  const fLevel  = document.getElementById('fLevel').value;
+  const fPri    = document.getElementById('fPri').value;
+  const fSearch = (document.getElementById('fSearch').value||'').toLowerCase().trim();
+
+  const filtered = allStatementRows.filter(r => {
+    if (!r || (!r[0]&&!r[1]&&!r[2])) return false;
+    if (fDomain && (r[0]||'').trim() !== fDomain) return false;
+    if (fLevel  && String(parseInt(r[3])||1) !== fLevel) return false;
+    if (fPri    && (r[10]||'') !== fPri) return false;
+    if (fSearch) {
+      const hay = [r[0],r[1],r[2],r[4],r[5],r[6],r[7],r[9],r[11]].join(' ').toLowerCase();
+      if (!hay.includes(fSearch)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('filterCount').textContent = `${filtered.length} items`;
+  const domains = groupBy(filtered, r => (r[0]||'').trim()||'General');
+  document.getElementById('csCardsWrapper').innerHTML =
+    filtered.length ? buildCards(filtered, domains)
+    : emptyHTML('🔍', 'Không tìm thấy kết quả phù hợp. Thử điều chỉnh bộ lọc.');
+}
+
+/* ══════════════════════════════════════════════
+   RENDER: LEVEL FRAMEWORK
+══════════════════════════════════════════════ */
 function renderFramework(rows) {
-  const el = document.getElementById('frameworkContent');
-  const valid = rows.filter(r => r[0] || r[1]);
+  const el    = document.getElementById('frameworkContent');
+  const valid = rows.filter(r => r && (r[0]||r[1]));
   document.getElementById('cnt-framework').textContent = valid.length;
 
   if (!valid.length) {
-    el.innerHTML = emptyState('🏛️', 'Sheet "Standard" chưa có dữ liệu hoặc chưa tồn tại.');
+    el.innerHTML = emptyHTML('🏛️', 'Sheet "Standard" chưa có dữ liệu.');
     return;
   }
 
-  // Group by domain
-  const domains = {};
-  valid.forEach(r => {
-    const d = (r[0]||'').trim() || 'Uncategorized';
-    if (!domains[d]) domains[d] = [];
-    domains[d].push(r);
-  });
+  const domains = groupBy(valid, r => (r[0]||'').trim()||'Uncategorized');
 
-  // Legend
   let html = '<div class="level-legend">';
-  for (const [n, cfg] of Object.entries(LV)) {
+  for (const [n,cfg] of Object.entries(LV)) {
     html += `<div class="legend-chip" style="background:${cfg.bg};border-color:${cfg.bd};color:${cfg.color}">
-      <span class="legend-dot" style="background:${cfg.color}"></span>L${n} · ${cfg.label}
-    </div>`;
+      <span class="legend-dot" style="background:${cfg.color}"></span>L${n} · ${cfg.label}</div>`;
   }
   html += '</div>';
 
-  // Stats
-  html += `<div class="stats-row" style="margin-bottom:24px">
-    <div class="stat-card"><div class="val" style="color:var(--c-brand)">${valid.length}</div><div class="lbl">Total Framework Entries</div></div>
-    <div class="stat-card"><div class="val" style="color:#16a34a">${Object.keys(domains).length}</div><div class="lbl">Capability Domains</div></div>
+  html += `<div class="stats-row" style="margin-bottom:22px">
+    <div class="stat-card"><div class="val" style="color:var(--c-brand)">${valid.length}</div><div class="lbl">Framework Entries</div></div>
+    <div class="stat-card"><div class="val" style="color:#16a34a">${Object.keys(domains).length}</div><div class="lbl">Domains</div></div>
     <div class="stat-card"><div class="val" style="color:#7c3aed">5</div><div class="lbl">Maturity Levels</div></div>
   </div>`;
 
-  // Accordion per domain
+  let first = true;
   for (const [domain, domRows] of Object.entries(domains)) {
-    const icon = dvIcon(domain);
+    const icon   = dvIcon(domain);
     const sorted = [...domRows].sort((a,b) => parseInt(a[1])-parseInt(b[1]));
-    html += `
-      <div class="domain-accordion" onclick="toggleAccordion(this)">
-        <div class="domain-trigger">
-          <span class="d-icon">${icon}</span>
-          <span class="d-name">${domain}</span>
-          <span class="d-count">${sorted.length} levels</span>
-          <span class="chevron">▼</span>
-        </div>
-        <div class="domain-body">
-          <table class="fw-table">
-            <thead><tr>
-              <th>Level</th><th>Name</th><th>Description</th>
-              <th>Key Activities</th><th>Tools & Technologies</th><th>KPIs / Metrics</th>
-            </tr></thead>
-            <tbody>`;
+    html += `<div class="domain-block${first?' open':''}" onclick="toggleBlock(event,this)">
+      <div class="domain-trigger">
+        <span class="d-icon">${icon}</span>
+        <span class="d-name">${domain}</span>
+        <span class="d-meta">${sorted.length} levels</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="domain-body">
+        <table class="fw-table"><thead><tr>
+          <th>Level</th><th>Name</th><th>Description</th>
+          <th>Key Activities</th><th>Tools & Technologies</th><th>KPIs / Metrics</th>
+        </tr></thead><tbody>`;
     sorted.forEach(r => {
-      const lvNum = parseInt(r[1])||1;
-      const cfg   = lvCfg(lvNum);
-      const toolTags = (r[5]||'').split(',').map(t=>t.trim()).filter(Boolean)
-        .map(t=>`<span class="tag tag-blue">${t}</span>`).join('');
+      const n   = parseInt(r[1])||1;
+      const cfg = lvCfg(n);
+      const toolTags = makeTags(r[5], 'tag-blue');
       html += `<tr>
-        <td><span class="level-pill ${cfg.cls}">${cfg.emoji} L${lvNum}</span></td>
+        <td><span class="lp ${cfg.cls}">${cfg.emoji} L${n}</span></td>
         <td style="font-weight:700;color:${cfg.color};white-space:nowrap">${r[2]||''}</td>
-        <td style="max-width:200px;color:#4b5563;font-size:12px">${r[3]||''}</td>
-        <td style="max-width:200px;color:#4b5563;font-size:12px">${r[4]||''}</td>
-        <td style="max-width:180px">${toolTags || '<span style="color:#94a3b8">—</span>'}</td>
-        <td style="color:#4b5563;font-size:12px;white-space:nowrap">${r[6]||'—'}</td>
+        <td style="max-width:190px;color:#4b5563;font-size:12px">${r[3]||''}</td>
+        <td style="max-width:190px;color:#4b5563;font-size:12px">${r[4]||''}</td>
+        <td style="max-width:170px">${toolTags||'—'}</td>
+        <td style="color:#4b5563;font-size:12px">${r[6]||'—'}</td>
       </tr>`;
     });
-    html += `</tbody></table></div></div>`;
+    html += '</tbody></table></div></div>';
+    first = false;
   }
-
-  el.innerHTML = html;
-  // Open first accordion by default
-  const first = el.querySelector('.domain-accordion');
-  if (first) first.classList.add('open');
-}
-
-/* ════════════════════════════════════════
-   RENDER: SMARTOSC CURRENT TAB
-   Expected columns (sheet "SmartOSC-Current"):
-   A: Domain  B: Current Level  C: Level Name
-   D: Evidence/Notes  E: Key Strengths
-   F: Gap to Next Level  G: Priority  H: Owner
-════════════════════════════════════════ */
-function renderSmartOSC(rows) {
-  const el = document.getElementById('smartoscContent');
-  const valid = rows.filter(r => r[0] && r[1]);
-  document.getElementById('cnt-smartosc').textContent = valid.length;
-
-  if (!valid.length) {
-    el.innerHTML = emptyState('🏢', 'Sheet "SmartOSC-Current" chưa có dữ liệu hoặc chưa tồn tại.');
-    return;
-  }
-
-  const avgLv     = (valid.reduce((s,r)=>s+(parseInt(r[1])||0),0)/valid.length).toFixed(1);
-  const highCount = valid.filter(r=>(r[6]||'').toLowerCase()==='high').length;
-  const l4plus    = valid.filter(r=>parseInt(r[1])>=4).length;
-
-  let html = `
-    <div class="section-hd">
-      <div class="icon-box" style="background:#fef3c7">📈</div>
-      <div><h2>SmartOSC Data Maturity Overview</h2><p>Tình trạng năng lực dữ liệu hiện tại</p></div>
-    </div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="val" style="color:var(--c-brand)">${avgLv}</div><div class="lbl">Average Maturity Level</div></div>
-      <div class="stat-card"><div class="val" style="color:#16a34a">${valid.length}</div><div class="lbl">Domains Assessed</div></div>
-      <div class="stat-card"><div class="val" style="color:#dc2626">${highCount}</div><div class="lbl">High Priority Gaps</div></div>
-      <div class="stat-card"><div class="val" style="color:#7c3aed">${l4plus}</div><div class="lbl">Domains at Level 4+</div></div>
-    </div>`;
-
-  // Radar / Progress bars
-  html += `
-    <div class="section-hd">
-      <div class="icon-box" style="background:#f0f9ff">📡</div>
-      <div><h2>Maturity Radar</h2><p>Mức độ trưởng thành theo domain</p></div>
-    </div>
-    <div class="radar-row">`;
-
-  valid.forEach(r => {
-    const lvNum = parseInt(r[1])||1;
-    const cfg   = lvCfg(lvNum);
-    const pct   = (lvNum/5)*100;
-    html += `
-      <div class="radar-item">
-        <div class="radar-item-hd">
-          <span class="radar-item-name">${dvIcon(r[0])} ${r[0]||'—'}</span>
-          <span class="level-pill ${cfg.cls}">${cfg.emoji} L${lvNum} · ${r[2]||cfg.label}</span>
-        </div>
-        <div class="pbar-wrap">
-          <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${cfg.color}"></div></div>
-          <span class="pbar-lbl">${lvNum}/5</span>
-        </div>
-      </div>`;
-  });
-  html += '</div>';
-
-  // Detailed cards
-  html += `
-    <div class="section-hd">
-      <div class="icon-box" style="background:#fdf4ff">🔍</div>
-      <div><h2>Detailed Assessment</h2><p>Chi tiết đánh giá từng domain</p></div>
-    </div>
-    <div class="cs-grid">`;
-
-  valid.forEach(r => {
-    const [domain, level, lvName, evidence, strengths, gap, priority, owner] = r;
-    const cfg  = lvCfg(level);
-    const icon = dvIcon(domain);
-    html += `
-      <div class="cs-card">
-        <div class="cs-card-header">
-          <div class="cs-card-icon">${icon}</div>
-          <div class="cs-card-hinfo">
-            <h3>${domain}</h3>
-            <p>${lvName || cfg.label}</p>
-          </div>
-        </div>
-        <div class="cs-card-body">
-          ${evidence ? `<div class="cs-statement">
-            <div class="cs-stmt-label">📋 Evidence / Notes</div>
-            <p>${evidence}</p>
-          </div>` : ''}
-          <div class="cs-info-grid">
-            ${strengths ? `<div class="cs-info-item full">
-              <div class="cs-info-label">✅ Key Strengths</div>
-              <div class="cs-info-val" style="color:#15803d">${strengths}</div>
-            </div>` : ''}
-            ${gap ? `<div class="cs-info-item full">
-              <div class="cs-info-label">🎯 Gap to Next Level</div>
-              <div class="cs-info-val" style="color:#b45309">${gap}</div>
-            </div>` : ''}
-            ${owner ? `<div class="cs-info-item">
-              <div class="cs-info-label">👤 Owner</div>
-              <div class="cs-info-val" style="color:var(--c-brand);font-weight:600">${owner}</div>
-            </div>` : ''}
-          </div>
-        </div>
-        <div class="cs-card-footer">
-          <span class="level-pill ${cfg.cls}">${cfg.emoji} L${parseInt(level)||'?'} · ${cfg.label}</span>
-          ${priority ? `<span class="pri-pill pri-${priority}" style="border:1px solid">
-            ${priority==='High'?'🔥':priority==='Medium'?'⚡':'✅'} ${priority}
-          </span>` : ''}
-        </div>
-      </div>`;
-  });
-
-  html += '</div>';
   el.innerHTML = html;
 }
 
-/* ════════════════════════════════════════
-   ACCORDION
-════════════════════════════════════════ */
-function toggleAccordion(el) {
-  // Only toggle when clicking the trigger row, not the table inside
-  el.classList.toggle('open');
+function toggleBlock(event, block) {
+  if (event.target.closest('.domain-body')) return;
+  block.classList.toggle('open');
 }
-// Prevent table clicks from collapsing accordion
-document.addEventListener('click', e => {
-  if (e.target.closest('.domain-body')) e.stopPropagation();
-}, true);
 
-/* ════════════════════════════════════════
-   HELPERS
-════════════════════════════════════════ */
-function emptyState(icon, msg) {
-  return `<div class="empty-state"><div class="empty-ico">${icon}</div><p>${msg}</p></div>`;
+/* ══════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+function setDot(id, state) {
+  const el = document.getElementById(`dot-${id}`);
+  if (el) el.className = `init-dot ${state}`;
+}
+function showErrorHint(msg) {
+  const el = document.getElementById('errorHint');
+  el.innerHTML = msg; el.classList.add('show');
+}
+function showToast(type, msg) {
+  const el = document.getElementById('toastBar');
+  el.className = `toast ${type}`; el.innerHTML = msg; el.style.display = 'flex';
+}
+function renderUserChip(info) {
+  const chip = document.getElementById('userChip');
+  chip.style.display = 'flex';
+  document.getElementById('userName').textContent = info.name || info.email || 'User';
+  const avatar = document.getElementById('userAvatar');
+  avatar.innerHTML = info.picture
+    ? `<img src="${info.picture}" alt="" referrerpolicy="no-referrer">`
+    : (info.name||info.email||'U')[0].toUpperCase();
+}
+function groupBy(arr, fn) {
+  return arr.reduce((acc, item) => { const k=fn(item); if(!acc[k])acc[k]=[]; acc[k].push(item); return acc; }, {});
+}
+function avg(arr, fn) {
+  if (!arr.length) return '0.0';
+  return (arr.reduce((s,r) => s+fn(r), 0) / arr.length).toFixed(1);
+}
+function makeTags(str, cls) {
+  return (str||'').split(',').map(t=>t.trim()).filter(Boolean)
+    .map(t=>`<span class="tag ${cls}">${t}</span>`).join('');
+}
+function emptyHTML(icon, msg) {
+  return `<div class="empty-state"><div class="ei">${icon}</div><p>${msg}</p></div>`;
 }
 window.addEventListener('scroll', () => {
-  document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 320);
+  document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 300);
 });
 </script>
 </body>
