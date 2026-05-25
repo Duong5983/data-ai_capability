@@ -1,549 +1,759 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Data Capability Level Framework</title>
+  <title>SmartOSC — Data Capability Statement</title>
   <style>
-    /* ===== RESET & BASE ===== */
+    /* ══════════════════════════════════════
+       RESET & TOKENS
+    ══════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary:    #1a73e8;
-      --primary-dk: #1557b0;
-      --bg:         #f0f4f8;
-      --card:       #ffffff;
-      --border:     #dde3ec;
-      --text:       #1f2937;
-      --muted:      #6b7280;
-      --success:    #16a34a;
-      --warn:       #d97706;
-      --danger:     #dc2626;
-      --info:       #0891b2;
-      --purple:     #7c3aed;
-      --radius:     12px;
-      --shadow:     0 2px 12px rgba(0,0,0,0.08);
-      --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+      --c-brand:       #1a73e8;
+      --c-brand-dk:    #1557b0;
+      --c-brand-lt:    #e8f0fe;
+      --c-bg:          #f0f4f9;
+      --c-surface:     #ffffff;
+      --c-border:      #e2e8f0;
+      --c-text:        #1e293b;
+      --c-muted:       #64748b;
+      --c-success:     #16a34a;
+      --c-warn:        #d97706;
+      --c-danger:      #dc2626;
+      --c-purple:      #7c3aed;
+      --radius-sm:     8px;
+      --radius-md:     12px;
+      --radius-lg:     16px;
+      --shadow-sm:     0 1px 6px rgba(0,0,0,0.06);
+      --shadow-md:     0 4px 16px rgba(0,0,0,0.09);
+      --shadow-lg:     0 12px 40px rgba(0,0,0,0.13);
+      --nav-h:         60px;
     }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+    html { scroll-behavior: smooth; font-size: 14px; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+           background: var(--c-bg); color: var(--c-text); min-height: 100vh; }
 
-    /* ===== HEADER ===== */
-    .site-header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a73e8 100%);
-      color: #fff;
-      padding: 28px 40px 24px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    }
-    .site-header .logo {
-      width: 48px; height: 48px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 10px;
+    /* ══════════════════════════════════════
+       FULL-SCREEN OVERLAYS
+    ══════════════════════════════════════ */
+    .overlay {
+      position: fixed; inset: 0; z-index: 900;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f4c8a 100%);
+      transition: opacity .35s, visibility .35s;
     }
-    .site-header h1 {
-      font-size: 22px; font-weight: 700; letter-spacing: 0.3px;
-    }
-    .site-header p {
-      font-size: 13px; opacity: 0.75; margin-top: 2px;
-    }
-    .header-badge {
-      margin-left: auto;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
+    .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    /* ===== TABS ===== */
+    /* ── Login card ── */
+    .login-card {
+      background: var(--c-surface); border-radius: 24px;
+      padding: 52px 48px; max-width: 460px; width: 92%;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #1a73e8, #34a853, #fbbc04, #ea4335);
+    }
+    .login-logo { font-size: 56px; margin-bottom: 6px; }
+    .login-brand {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      color: var(--c-brand); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .login-card h1 { font-size: 22px; font-weight: 800; color: var(--c-text); margin-bottom: 8px; }
+    .login-card .subtitle { font-size: 13.5px; color: var(--c-muted); line-height: 1.65; margin-bottom: 28px; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--c-border); }
+    .divider span { font-size: 11px; color: var(--c-muted); font-weight: 600; white-space: nowrap; }
+
+    /* Google sign-in button */
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 14px 20px;
+      background: #fff; color: var(--c-text);
+      border: 2px solid var(--c-border); border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all .2s; box-shadow: var(--shadow-sm);
+    }
+    .btn-google:hover:not(:disabled) {
+      border-color: var(--c-brand);
+      box-shadow: 0 4px 20px rgba(26,115,232,.22);
+      transform: translateY(-1px);
+    }
+    .btn-google:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-google .g-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .login-footer { margin-top: 20px; font-size: 11.5px; color: #94a3b8; line-height: 1.6; }
+
+    /* ── Access Denied card ── */
+    .denied-card {
+      background: var(--c-surface); border-radius: 24px;
+      padding: 52px 48px; max-width: 460px; width: 92%;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .denied-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #dc2626, #f97316);
+    }
+    .denied-icon { font-size: 56px; margin-bottom: 16px; }
+    .denied-card h2 { font-size: 20px; font-weight: 800; color: var(--c-danger); margin-bottom: 10px; }
+    .denied-card p { font-size: 13.5px; color: var(--c-muted); line-height: 1.7; margin-bottom: 22px; }
+    .denied-card .contact-box {
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm);
+      padding: 14px 18px; margin-bottom: 22px; text-align: left;
+    }
+    .denied-card .contact-box p { margin: 0; font-size: 13px; color: var(--c-danger); }
+    .btn-retry {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 26px; background: #fef2f2; color: var(--c-danger);
+      border: 1.5px solid #fca5a5; border-radius: var(--radius-sm);
+      font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-retry:hover { background: #fee2e2; transform: translateY(-1px); }
+
+    /* ══════════════════════════════════════
+       TOP NAV
+    ══════════════════════════════════════ */
+    .topnav {
+      height: var(--nav-h);
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1a73e8 100%);
+      display: flex; align-items: center; padding: 0 32px; gap: 16px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.25);
+      position: sticky; top: 0; z-index: 200;
+    }
+    .topnav-logo { font-size: 24px; }
+    .topnav-titles { flex: 1; }
+    .topnav-titles h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: .2px; }
+    .topnav-titles p  { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
+    .nav-badge {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .5px; white-space: nowrap;
+    }
+    .user-chip {
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      border-radius: 24px; padding: 5px 14px 5px 6px;
+    }
+    .user-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--c-brand); display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name { font-size: 12.5px; font-weight: 600; color: #fff;
+                 max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-signout {
+      padding: 7px 15px; background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2); border-radius: var(--radius-sm);
+      color: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn-signout:hover { background: rgba(220,38,38,.35); border-color: rgba(220,38,38,.5); }
+
+    /* ══════════════════════════════════════
+       TAB BAR
+    ══════════════════════════════════════ */
     .tab-bar {
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      padding: 0 40px;
-      display: flex;
-      gap: 4px;
-      position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+      padding: 0 32px; display: flex; gap: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+      overflow-x: auto;
     }
     .tab-btn {
-      padding: 16px 22px;
+      padding: 0 22px; height: 52px;
       border: none; background: transparent;
-      font-size: 14px; font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      display: flex; align-items: center; gap: 8px;
-      white-space: nowrap;
+      font-size: 13.5px; font-weight: 600; color: var(--c-muted);
+      cursor: pointer; border-bottom: 3px solid transparent;
+      transition: all .2s; display: flex; align-items: center; gap: 8px;
+      white-space: nowrap; flex-shrink: 0;
     }
-    .tab-btn:hover { color: var(--primary); background: #f0f7ff; border-radius: 8px 8px 0 0; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .tab-btn .tab-icon { font-size: 16px; }
+    .tab-btn:hover  { color: var(--c-brand); background: #f0f7ff; border-radius: 8px 8px 0 0; }
+    .tab-btn.active { color: var(--c-brand); border-bottom-color: var(--c-brand); }
+    .tab-count {
+      background: var(--c-brand-lt); color: var(--c-brand);
+      border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 700;
+    }
+    .tab-btn.active .tab-count { background: var(--c-brand); color: #fff; }
 
-    /* ===== MAIN CONTENT ===== */
-    .main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
-
-    /* ===== CONFIG PANEL ===== */
-    .config-panel {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: flex-end;
-      gap: 16px;
-      flex-wrap: wrap;
-      box-shadow: var(--shadow);
-    }
-    .config-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 260px; }
-    .config-group label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .config-group input {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 14px;
-      font-size: 14px;
-      color: var(--text);
-      background: #f9fafb;
-      transition: border-color 0.2s;
-      width: 100%;
-    }
-    .config-group input:focus { outline: none; border-color: var(--primary); background: #fff; }
-    .btn {
-      padding: 10px 22px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dk); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,0.35); }
-    .btn-secondary { background: #f3f4f6; color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #e5e7eb; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    /* ===== STATUS BAR ===== */
-    .status-bar {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 20px;
-      transition: all 0.3s;
-    }
-    .status-bar.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
-    .status-bar.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-    .status-bar.error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-    .status-bar.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== SECTION TITLE ===== */
-    .section-title {
-      font-size: 18px; font-weight: 700;
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 10px;
-      color: var(--text);
-    }
-    .section-title .title-icon {
-      width: 36px; height: 36px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    /* ===== LEVEL LEGEND ===== */
-    .level-legend {
-      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;
-    }
-    .legend-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 12px; font-weight: 600;
-      border: 2px solid transparent;
-      cursor: default;
-    }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-    /* ===== TABLE WRAPPER ===== */
-    .table-section { margin-bottom: 36px; }
-    .table-wrapper {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .table-header-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px;
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap; gap: 10px;
-    }
-    .table-header-bar h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .table-meta { font-size: 12px; color: var(--muted); }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      background: linear-gradient(135deg, #1e3a5f, #1a73e8);
-      color: #fff;
-      padding: 12px 16px;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-    thead th:first-child { border-radius: 0; }
-    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #f8faff; }
-    tbody td { padding: 12px 16px; font-size: 13.5px; vertical-align: middle; }
-    tbody td:first-child { font-weight: 600; color: var(--text); }
-
-    /* ===== LEVEL BADGES ===== */
-    .level-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px; font-weight: 700;
-      white-space: nowrap;
-    }
-    .level-1 { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
-    .level-2 { background: #fff7ed; color: #ea580c; border: 1px solid #fdba74; }
-    .level-3 { background: #fefce8; color: #ca8a04; border: 1px solid #fde047; }
-    .level-4 { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
-    .level-5 { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; }
-
-    /* ===== CAPABILITY CARDS (Standard tab) ===== */
-    .capability-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-      margin-bottom: 32px;
-    }
-    .cap-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .cap-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-    .cap-card-header {
-      padding: 14px 18px;
-      display: flex; align-items: center; gap: 12px;
-      background: linear-gradient(135deg, #0f172a, #1e3a5f);
-      color: #fff;
-    }
-    .cap-card-icon { font-size: 22px; }
-    .cap-card-title { font-size: 14px; font-weight: 700; }
-    .cap-card-body { padding: 16px 18px; }
-    .cap-level-row {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .cap-level-row:last-child { border-bottom: none; }
-    .cap-level-num {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .cap-level-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-    .cap-level-info p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-    /* ===== SMARTOSC TAB EXTRAS ===== */
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-    .sum-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 20px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-    .sum-card .sum-value { font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
-    .sum-card .sum-label { font-size: 12px; color: var(--muted); font-weight: 500; }
-
-    /* ===== PROGRESS BAR ===== */
-    .progress-bar-wrap { display: flex; align-items: center; gap: 10px; }
-    .progress-bar-bg {
-      flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%; border-radius: 4px;
-      transition: width 0.6s ease;
-    }
-    .progress-label { font-size: 12px; font-weight: 700; color: var(--muted); min-width: 32px; text-align: right; }
-
-    /* ===== EMPTY / PLACEHOLDER ===== */
-    .empty-state {
-      text-align: center; padding: 60px 20px; color: var(--muted);
-    }
-    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
-    .empty-state p { font-size: 15px; }
-
-    /* ===== TAGS ===== */
-    .tag {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 11px; font-weight: 600;
-      background: #eff6ff; color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-      margin: 2px;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .site-header { padding: 20px; flex-wrap: wrap; }
-      .tab-bar { padding: 0 16px; overflow-x: auto; }
-      .main { padding: 20px 16px; }
-      .config-panel { flex-direction: column; }
-      .header-badge { display: none; }
-    }
-
-    /* ===== HELP TEXT ===== */
-    .help-text {
-      font-size: 12px; color: var(--muted);
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      display: flex; align-items: flex-start; gap: 10px;
-      line-height: 1.6;
-    }
-    .help-text .help-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-    /* ===== TAB PANEL ===== */
+    /* ══════════════════════════════════════
+       MAIN LAYOUT
+    ══════════════════════════════════════ */
+    .app-main { padding: 28px 32px; max-width: 1440px; margin: 0 auto; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ===== SCROLL TOP ===== */
-    #scrollTop {
-      position: fixed; bottom: 30px; right: 30px;
-      width: 44px; height: 44px;
-      background: var(--primary); color: #fff;
-      border: none; border-radius: 50%;
-      font-size: 20px; cursor: pointer;
-      box-shadow: 0 4px 16px rgba(26,115,232,0.4);
-      display: none;
-      align-items: center; justify-content: center;
-      transition: all 0.2s;
-      z-index: 999;
+    /* ══════════════════════════════════════
+       STATUS / TOAST
+    ══════════════════════════════════════ */
+    .toast {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px; border-radius: var(--radius-sm);
+      font-size: 13px; margin-bottom: 20px; animation: fadeIn .3s ease;
     }
-    #scrollTop:hover { background: var(--primary-dk); transform: translateY(-2px); }
-    #scrollTop.visible { display: flex; }
+    .toast.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+    .toast.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .toast.error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+    .toast.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+    .spinner {
+      width: 15px; height: 15px; border: 2.5px solid currentColor;
+      border-top-color: transparent; border-radius: 50%;
+      animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════
+       SECTION HEADER
+    ══════════════════════════════════════ */
+    .section-hd {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px;
+    }
+    .section-hd .icon-box {
+      width: 38px; height: 38px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
+    }
+    .section-hd h2 { font-size: 17px; font-weight: 800; }
+    .section-hd p  { font-size: 12.5px; color: var(--c-muted); margin-top: 2px; }
+
+    /* ══════════════════════════════════════
+       HERO STATS ROW
+    ══════════════════════════════════════ */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--c-surface); border-radius: var(--radius-md);
+      padding: 20px 18px; border: 1px solid var(--c-border);
+      box-shadow: var(--shadow-sm); text-align: center;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .stat-card .val { font-size: 30px; font-weight: 900; line-height: 1; margin-bottom: 5px; }
+    .stat-card .lbl { font-size: 11.5px; color: var(--c-muted); font-weight: 600; line-height: 1.4; }
+
+    /* ══════════════════════════════════════
+       CAPABILITY STATEMENT CARDS (main view)
+    ══════════════════════════════════════ */
+    .cs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px; margin-bottom: 32px;
+    }
+    .cs-card {
+      background: var(--c-surface); border-radius: var(--radius-lg);
+      border: 1px solid var(--c-border); overflow: hidden;
+      box-shadow: var(--shadow-sm); transition: transform .2s, box-shadow .2s;
+      display: flex; flex-direction: column;
+    }
+    .cs-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+    .cs-card-header {
+      padding: 16px 20px; display: flex; align-items: center; gap: 13px;
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      color: #fff;
+    }
+    .cs-card-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .cs-card-hinfo h3  { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+    .cs-card-hinfo p   { font-size: 11.5px; opacity: .7; }
+
+    .cs-card-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Statement block */
+    .cs-statement {
+      background: linear-gradient(135deg, #f8faff, #eff6ff);
+      border-left: 4px solid var(--c-brand);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 12px 15px;
+    }
+    .cs-statement .cs-stmt-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; color: var(--c-brand); margin-bottom: 5px;
+    }
+    .cs-statement p { font-size: 12.5px; color: var(--c-text); line-height: 1.65; }
+
+    /* Info rows */
+    .cs-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cs-info-item { }
+    .cs-info-item .cs-info-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--c-muted); margin-bottom: 5px;
+    }
+    .cs-info-item .cs-info-val {
+      font-size: 12.5px; color: var(--c-text); line-height: 1.5;
+    }
+    .cs-info-item.full { grid-column: 1 / -1; }
+
+    /* Tags */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tag {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600;
+    }
+    .tag-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .tag-green  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .tag-purple { background: #faf5ff; color: #7c3aed; border: 1px solid #d8b4fe; }
+    .tag-orange { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+
+    /* Level badge on card */
+    .cs-card-footer {
+      padding: 12px 20px; border-top: 1px solid var(--c-border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fafbfc;
+    }
+    .level-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 13px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; border: 1.5px solid transparent;
+    }
+    .lv1 { background:#fef2f2; color:#dc2626; border-color:#fca5a5; }
+    .lv2 { background:#fff7ed; color:#ea580c; border-color:#fdba74; }
+    .lv3 { background:#fefce8; color:#ca8a04; border-color:#fde047; }
+    .lv4 { background:#f0fdf4; color:#16a34a; border-color:#86efac; }
+    .lv5 { background:#eff6ff; color:#2563eb; border-color:#93c5fd; }
+    .pri-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+    }
+    .pri-High   { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; }
+    .pri-Medium { background:#fff7ed; color:#d97706; border:1px solid #fdba74; }
+    .pri-Low    { background:#f0fdf4; color:#16a34a; border:1px solid #86efac; }
+
+    /* ══════════════════════════════════════
+       LEVEL FRAMEWORK — ACCORDION TABLE
+    ══════════════════════════════════════ */
+    .level-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .legend-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1.5px solid transparent; cursor: default;
+    }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .domain-accordion { margin-bottom: 12px; border-radius: var(--radius-md); overflow: hidden;
+                        border: 1px solid var(--c-border); box-shadow: var(--shadow-sm); }
+    .domain-trigger {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; background: linear-gradient(135deg,#1e3a5f,#1a73e8);
+      color: #fff; cursor: pointer; user-select: none;
+      transition: filter .2s;
+    }
+    .domain-trigger:hover { filter: brightness(1.1); }
+    .domain-trigger .d-icon { font-size: 20px; }
+    .domain-trigger .d-name { font-size: 14px; font-weight: 700; flex: 1; }
+    .domain-trigger .d-count { font-size: 12px; opacity: .75; }
+    .domain-trigger .chevron { font-size: 13px; transition: transform .25s; }
+    .domain-accordion.open .chevron { transform: rotate(180deg); }
+    .domain-body { display: none; overflow-x: auto; }
+    .domain-accordion.open .domain-body { display: block; }
+
+    .fw-table { width: 100%; border-collapse: collapse; }
+    .fw-table thead th {
+      background: #f8fafc; padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--c-muted); border-bottom: 1px solid var(--c-border);
+      white-space: nowrap;
+    }
+    .fw-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+    .fw-table tbody tr:last-child { border-bottom: none; }
+    .fw-table tbody tr:hover { background: #f8faff; }
+    .fw-table tbody td { padding: 11px 14px; font-size: 12.5px; vertical-align: top; }
+
+    /* ══════════════════════════════════════
+       PROGRESS / RADAR VIEW (SmartOSC tab)
+    ══════════════════════════════════════ */
+    .radar-row {
+      background: var(--c-surface); border-radius: var(--radius-md);
+      border: 1px solid var(--c-border); padding: 22px 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 28px;
+    }
+    .radar-item { margin-bottom: 18px; }
+    .radar-item:last-child { margin-bottom: 0; }
+    .radar-item-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 7px; flex-wrap: wrap; gap: 6px;
+    }
+    .radar-item-name { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+    .pbar-wrap { display: flex; align-items: center; gap: 10px; }
+    .pbar-bg { flex: 1; height: 9px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+    .pbar-fill { height: 100%; border-radius: 5px; transition: width .7s ease; }
+    .pbar-lbl { font-size: 12px; font-weight: 700; color: var(--c-muted); min-width: 28px; text-align: right; }
+
+    /* ══════════════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════════════ */
+    .empty-state { text-align: center; padding: 64px 20px; color: var(--c-muted); }
+    .empty-state .empty-ico { font-size: 52px; margin-bottom: 14px; }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
+
+    /* ══════════════════════════════════════
+       SCROLL TOP
+    ══════════════════════════════════════ */
+    #scrollTop {
+      position: fixed; bottom: 26px; right: 26px;
+      width: 42px; height: 42px; background: var(--c-brand); color: #fff;
+      border: none; border-radius: 50%; font-size: 17px; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,115,232,.45);
+      display: none; align-items: center; justify-content: center;
+      transition: all .2s; z-index: 500;
+    }
+    #scrollTop:hover { background: var(--c-brand-dk); transform: translateY(-2px); }
+    #scrollTop.show { display: flex; }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .topnav { padding: 0 16px; }
+      .app-main { padding: 16px; }
+      .tab-bar { padding: 0 10px; }
+      .cs-grid { grid-template-columns: 1fr; }
+      .cs-info-grid { grid-template-columns: 1fr; }
+      .nav-badge { display: none; }
+    }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="site-header">
-  <div class="logo">📊</div>
-  <div>
-    <h1>Data Capability Level Framework</h1>
-    <p>Assess, benchmark and track data maturity across your organization</p>
+<!-- ══════════════════════════════════════════
+     OVERLAY 1: LOGIN
+══════════════════════════════════════════ -->
+<div class="overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">📊</div>
+    <div class="login-brand">SmartOSC · Data & AI</div>
+    <h1>Data Capability Statement</h1>
+    <p class="subtitle">
+      Tài liệu này mô tả năng lực dữ liệu và AI của SmartOSC.<br/>
+      Vui lòng đăng nhập bằng tài khoản Google để tiếp tục.
+    </p>
+
+    <button class="btn-google" id="signInBtn" onclick="handleSignIn()" disabled>
+      <svg class="g-icon" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      <span id="signInBtnText">Đang khởi tạo…</span>
+    </button>
+
+    <div class="divider"><span>Thông tin bảo mật</span></div>
+    <p class="login-footer">
+      🔒 Chỉ yêu cầu quyền <strong>đọc</strong> Google Sheets · Không lưu dữ liệu cá nhân<br/>
+      Tài liệu nội bộ — chỉ dành cho thành viên được cấp quyền
+    </p>
   </div>
-  <div class="header-badge">SmartOSC Data & AI</div>
-</header>
+</div>
 
-<!-- TABS -->
-<nav class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('standard', this)">
-    <span class="tab-icon">🏛️</span> Standard Framework
-  </button>
-  <button class="tab-btn" onclick="switchTab('smartosc', this)">
-    <span class="tab-icon">🏢</span> SmartOSC Current Status
-  </button>
-</nav>
-
-<!-- MAIN -->
-<main class="main">
-
-  <!-- CONFIG PANEL -->
-  <div class="config-panel">
-    <div class="config-group">
-      <label>🔗 Google Sheet ID</label>
-      <input type="text" id="sheetId" placeholder="Paste your Google Sheet ID here..."
-        value="YOUR_SHEET_ID_HERE" />
+<!-- ══════════════════════════════════════════
+     OVERLAY 2: ACCESS DENIED
+══════════════════════════════════════════ -->
+<div class="overlay hidden" id="deniedOverlay">
+  <div class="denied-card">
+    <div class="denied-icon">🔒</div>
+    <h2>Không có quyền truy cập</h2>
+    <p>
+      Xin lỗi, đây là tài liệu <strong>nội bộ của SmartOSC</strong>.<br/>
+      Tài khoản của bạn chưa được cấp quyền xem nội dung này.
+    </p>
+    <div class="contact-box">
+      <p>📧 Vui lòng liên hệ <strong>Admin / Data Owner</strong> để được cấp quyền truy cập.</p>
     </div>
-    <button class="btn btn-primary" onclick="loadData()" id="loadBtn">
-      ⚡ Load Data
-    </button>
-    <button class="btn btn-secondary" onclick="loadSampleData()">
-      🧪 Load Sample Data
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:20px">
+      Đã đăng nhập với: <strong id="deniedEmail" style="color:#64748b"></strong>
+    </p>
+    <button class="btn-retry" onclick="handleSignOut()">
+      🔄 Đăng nhập tài khoản khác
     </button>
   </div>
+</div>
 
-  <div class="help-text">
-    <span class="help-icon">💡</span>
-    <span>
-      <strong>How to connect:</strong> Open your Google Sheet → <em>File → Share → Publish to web</em>
-      → choose <strong>Entire Document</strong> → <strong>CSV</strong> → Publish.
-      Then copy the Sheet ID from the URL (the long string between <code>/d/</code> and <code>/edit</code>).
-      The sheet must have tabs named exactly <strong>Standard</strong> and <strong>SmartOSC-Current</strong>.
-    </span>
-  </div>
+<!-- ══════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════ -->
+<div id="appShell" style="display:none">
 
-  <!-- STATUS BAR -->
-  <div id="statusBar" class="status-bar info" style="display:none;"></div>
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="topnav-logo">📊</div>
+    <div class="topnav-titles">
+      <h1>Data Capability Statement</h1>
+      <p>SmartOSC · Data & AI Practice</p>
+    </div>
+    <div class="nav-badge">INTERNAL</div>
+    <div class="user-chip" id="userChip" style="display:none">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span class="user-name" id="userName"></span>
+    </div>
+    <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
+  </nav>
 
-  <!-- ======================== TAB: STANDARD ======================== -->
-  <div id="tab-standard" class="tab-panel active">
-    <div id="standardContent">
-      <div class="empty-state">
-        <div class="empty-icon">🏛️</div>
-        <p>Click <strong>"Load Data"</strong> or <strong>"Load Sample Data"</strong> to display the Standard Framework.</p>
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="tab-btn-statement" onclick="switchTab('statement',this)">
+      📋 Capability Statement <span class="tab-count" id="cnt-statement">0</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-framework" onclick="switchTab('framework',this)">
+      🏛️ Level Framework <span class="tab-count" id="cnt-framework">0</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-smartosc" onclick="switchTab('smartosc',this)">
+      🏢 SmartOSC Current <span class="tab-count" id="cnt-smartosc">0</span>
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <div id="toastBar" style="display:none"></div>
+
+    <!-- ── TAB: CAPABILITY STATEMENT ── -->
+    <div id="tab-statement" class="tab-panel active">
+      <div id="statementContent">
+        <div class="empty-state">
+          <div class="empty-ico">📋</div>
+          <p>Đang tải dữ liệu…</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ======================== TAB: SMARTOSC ======================== -->
-  <div id="tab-smartosc" class="tab-panel">
-    <div id="smartoscContent">
-      <div class="empty-state">
-        <div class="empty-icon">🏢</div>
-        <p>Click <strong>"Load Data"</strong> or <strong>"Load Sample Data"</strong> to display SmartOSC Current Status.</p>
+    <!-- ── TAB: LEVEL FRAMEWORK ── -->
+    <div id="tab-framework" class="tab-panel">
+      <div id="frameworkContent">
+        <div class="empty-state">
+          <div class="empty-ico">🏛️</div>
+          <p>Đang tải dữ liệu…</p>
+        </div>
       </div>
     </div>
-  </div>
 
-</main>
+    <!-- ── TAB: SMARTOSC CURRENT ── -->
+    <div id="tab-smartosc" class="tab-panel">
+      <div id="smartoscContent">
+        <div class="empty-state">
+          <div class="empty-ico">🏢</div>
+          <p>Đang tải dữ liệu…</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
 
 <!-- SCROLL TOP -->
 <button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
+
+<!-- ══════════════════════════════════════════
+     GOOGLE APIS
+══════════════════════════════════════════ -->
+<script src="https://apis.google.com/js/api.js"       onload="gapiLoaded()" async defer></script>
+<script src="https://accounts.google.com/gsi/client"  onload="gisLoaded()"  async defer></script>
+
 <script>
-// =============================================
-//  CONSTANTS & CONFIG
-// =============================================
-const LEVEL_CONFIG = {
-  1: { label: 'Level 1 – Initial',                color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', emoji: '🔴' },
-  2: { label: 'Level 2 – Managed',               color: '#ea580c', bg: '#fff7ed', border: '#fdba74', emoji: '🟠' },
-  3: { label: 'Level 3 – Defined',                color: '#ca8a04', bg: '#fefce8', border: '#fde047', emoji: '🟡' },
-  4: { label: 'Level 4 – Quantitatively Managed', color: '#16a34a', bg: '#f0fdf4', border: '#86efac', emoji: '🟢' },
-  5: { label: 'Level 5 – Optimizing',             color: '#2563eb', bg: '#eff6ff', border: '#93c5fd', emoji: '🔵' },
+/* ════════════════════════════════════════
+   ⚙️  CONFIG  — chỉ cần thay CLIENT_ID & API_KEY
+════════════════════════════════════════ */
+const CLIENT_ID  = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // ← thay vào đây
+const API_KEY    = 'YOUR_API_KEY';                               // ← thay vào đây
+const SHEET_ID   = '1t1kOc2iJz8F16e3iPAe144BqVl1UAPfvaCqOUad2fJg'; // cố định
+const DISCOVERY  = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let gapiInited = false, gisInited = false, tokenClient;
+let currentUserEmail = '';
+
+/* ════════════════════════════════════════
+   GAPI / GIS BOOT
+════════════════════════════════════════ */
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY] });
+    gapiInited = true;
+    maybeReady();
+  });
+}
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: onTokenResponse,
+  });
+  gisInited = true;
+  maybeReady();
+}
+function maybeReady() {
+  if (!gapiInited || !gisInited) return;
+  const btn = document.getElementById('signInBtn');
+  btn.disabled = false;
+  document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
+
+  // Restore session
+  const saved = sessionStorage.getItem('gapi_token');
+  if (saved) {
+    try {
+      gapi.client.setToken(JSON.parse(saved));
+      fetchUserAndLoad();
+    } catch(_) { sessionStorage.removeItem('gapi_token'); }
+  }
+}
+
+/* ════════════════════════════════════════
+   AUTH FLOW
+════════════════════════════════════════ */
+function handleSignIn() {
+  const btn = document.getElementById('signInBtn');
+  btn.disabled = true;
+  document.getElementById('signInBtnText').textContent = 'Đang xác thực…';
+  if (gapi.client.getToken() === null) {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  } else {
+    tokenClient.requestAccessToken({ prompt: '' });
+  }
+}
+
+async function onTokenResponse(resp) {
+  const btn = document.getElementById('signInBtn');
+  btn.disabled = false;
+  document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
+  if (resp.error) {
+    console.error(resp);
+    showToast('error', '❌ Đăng nhập thất bại: ' + (resp.error_description || resp.error));
+    return;
+  }
+  sessionStorage.setItem('gapi_token', JSON.stringify(gapi.client.getToken()));
+  await fetchUserAndLoad();
+}
+
+async function fetchUserAndLoad() {
+  // 1. Get user profile
+  try {
+    const token = gapi.client.getToken();
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
+      { headers: { Authorization: `Bearer ${token.access_token}` } });
+    if (res.ok) {
+      const info = await res.json();
+      currentUserEmail = info.email || '';
+      renderUserChip(info);
+    }
+  } catch(_) {}
+
+  // 2. Try loading the sheet — this is the permission gate
+  await loadSheetData();
+}
+
+/* ════════════════════════════════════════
+   PERMISSION-GATED SHEET LOAD
+════════════════════════════════════════ */
+async function loadSheetData() {
+  showLoginOverlay(false);
+  showApp(true);
+  showToast('loading', '<div class="spinner"></div> Đang tải dữ liệu từ Google Sheets…');
+
+  try {
+    // Fetch all 3 sheets in parallel
+    const [stmtResp, fwResp, soResp] = await Promise.all([
+      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Statement!A2:Z' }),
+      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Standard!A2:G'  }),
+      gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'SmartOSC-Current!A2:H' }),
+    ]);
+
+    const stmtRows = stmtResp.result.values || [];
+    const fwRows   = fwResp.result.values   || [];
+    const soRows   = soResp.result.values   || [];
+
+    renderStatement(stmtRows);
+    renderFramework(fwRows);
+    renderSmartOSC(soRows);
+
+    showToast('success', `✅ Tải thành công — ${stmtRows.length} capability statements, ${fwRows.length} framework rows, ${soRows.length} current-state rows.`);
+
+  } catch (err) {
+    console.error(err);
+    const code = err?.result?.error?.status || err?.result?.error?.code || '';
+    const msg  = err?.result?.error?.message || err.message || '';
+
+    // ── ACCESS DENIED ──
+    if (code === 'PERMISSION_DENIED' || msg.includes('403') || msg.toLowerCase().includes('permission')) {
+      showApp(false);
+      showDenied(true);
+      return;
+    }
+    // ── OTHER ERROR ──
+    showToast('error', `❌ Lỗi tải dữ liệu: ${msg || 'Không xác định'}. Kiểm tra tên các sheet tab.`);
+  }
+}
+
+function handleSignOut() {
+  const token = gapi.client.getToken();
+  if (token) {
+    try { google.accounts.oauth2.revoke(token.access_token, ()=>{}); } catch(_){}
+    gapi.client.setToken('');
+  }
+  sessionStorage.removeItem('gapi_token');
+  currentUserEmail = '';
+  showApp(false);
+  showDenied(false);
+  showLoginOverlay(true);
+  document.getElementById('signInBtnText').textContent = 'Đăng nhập với Google';
+}
+
+/* ── overlay helpers ── */
+function showLoginOverlay(show) {
+  document.getElementById('loginOverlay').classList.toggle('hidden', !show);
+}
+function showDenied(show) {
+  document.getElementById('deniedOverlay').classList.toggle('hidden', !show);
+  if (show) document.getElementById('deniedEmail').textContent = currentUserEmail;
+}
+function showApp(show) {
+  document.getElementById('appShell').style.display = show ? 'block' : 'none';
+}
+
+/* ── user chip ── */
+function renderUserChip(info) {
+  const chip   = document.getElementById('userChip');
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  chip.style.display = 'flex';
+  name.textContent   = info.name || info.email || 'User';
+  if (info.picture) {
+    avatar.innerHTML = `<img src="${info.picture}" alt="" referrerpolicy="no-referrer">`;
+  } else {
+    avatar.textContent = (info.name || info.email || 'U')[0].toUpperCase();
+  }
+}
+
+/* ════════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════ */
+const LV = {
+  1:{ label:'Initial',                emoji:'🔴', color:'#dc2626', bg:'#fef2f2', bd:'#fca5a5', cls:'lv1' },
+  2:{ label:'Managed',               emoji:'🟠', color:'#ea580c', bg:'#fff7ed', bd:'#fdba74', cls:'lv2' },
+  3:{ label:'Defined',                emoji:'🟡', color:'#ca8a04', bg:'#fefce8', bd:'#fde047', cls:'lv3' },
+  4:{ label:'Quantitatively Managed', emoji:'🟢', color:'#16a34a', bg:'#f0fdf4', bd:'#86efac', cls:'lv4' },
+  5:{ label:'Optimizing',             emoji:'🔵', color:'#2563eb', bg:'#eff6ff', bd:'#93c5fd', cls:'lv5' },
 };
-
-const DOMAIN_ICONS = {
-  'Data Governance':      '🏛️',
-  'Data Architecture':    '🏗️',
-  'Data Engineering':     '⚙️',
-  'Data Quality':         '✅',
-  'Analytics & BI':       '📊',
-  'AI & Machine Learning':'🤖',
-  'Data Security':        '🔒',
-  'DataOps & MLOps':      '🔄',
+const D_ICON = {
+  'Data Governance':'🏛️','Data Architecture':'🏗️','Data Engineering':'⚙️',
+  'Data Quality':'✅','Analytics & BI':'📊','AI & Machine Learning':'🤖',
+  'Data Security':'🔒','DataOps & MLOps':'🔄',
 };
+function dvIcon(d) { return D_ICON[d] || '📌'; }
+function lvCfg(n)  { return LV[Math.min(Math.max(parseInt(n)||1,1),5)]; }
 
-// =============================================
-//  SAMPLE DATA
-// =============================================
-const SAMPLE_STANDARD = [
-  // Domain, Level, Level Name, Description, Key Activities, Tools & Technologies, KPIs / Metrics
-  ['Data Governance','1','Initial','Ad-hoc and undocumented data policies; no formal ownership.','No formal data ownership; policies are verbal or absent; reactive handling of data issues.','Spreadsheets, email','# of data issues per month'],
-  ['Data Governance','2','Managed','Basic data ownership defined; some documented policies.','Data owners identified per domain; basic data dictionary; manual compliance checks.','Confluence, SharePoint, Excel','Data owner coverage (%)'],
-  ['Data Governance','3','Defined','Standardized governance framework enterprise-wide; data catalog active.','Enterprise data glossary; automated policy enforcement; regular audits; RACI defined.','Collibra, Alation, Informatica','Policy compliance rate (%)'],
-  ['Data Governance','4','Quantitatively Managed','Metrics-driven governance; SLA-backed data contracts in place.','Real-time governance dashboards; data SLAs with automated alerting; risk scoring.','Collibra + Atlan, Monte Carlo','SLA breach rate; Data trust score'],
-  ['Data Governance','5','Optimizing','Continuous governance improvement; AI-driven compliance monitoring.','Self-healing governance policies; AI-assisted lineage; predictive compliance risk detection.','AI Governance Platforms, LLM-based audit','Policy auto-remediation rate (%)'],
-
-  ['Data Architecture','1','Initial','Data stored in silos; no unified architecture or standards.','Data lives in departmental spreadsheets; no integration; duplicated data everywhere.','Local files, Excel, FTP','# of isolated data silos'],
-  ['Data Architecture','2','Managed','Basic data warehouse exists; limited integration between systems.','Central DWH initiated; ETL jobs partially automated; schema partially documented.','SQL Server, MySQL, simple ETL','DWH coverage of key data domains (%)'],
-  ['Data Architecture','3','Defined','Unified data platform (Lake / Warehouse / Lakehouse) with documented schemas.','Modern data stack adopted; data lineage documented; Data Mesh or Lakehouse design.','Snowflake, Databricks, dbt, Airflow','Data freshness SLA; # of integrated sources'],
-  ['Data Architecture','4','Quantitatively Managed','Cost- and performance-optimized architecture with real-time capabilities.','Event-driven architecture; streaming pipelines; compute cost per query tracked.','Kafka, Flink, Redshift, Delta Lake','Query performance p95; Cost per TB'],
-  ['Data Architecture','5','Optimizing','Self-optimizing architecture; automated schema evolution; zero-downtime migrations.','Architecture auto-scales based on demand; AI-driven query optimization; federated queries.','AI-assisted data platforms, automated IaC','Infrastructure cost savings (%)'],
-
-  ['Data Engineering','1','Initial','Manual data extraction; no pipelines; ad-hoc scripts.','Data moved manually via exports/imports; no version control; scripts not documented.','Excel, manual scripts','# of manual data transfers/month'],
-  ['Data Engineering','2','Managed','Basic ETL pipelines built; limited monitoring and scheduling.','Scheduled ETL jobs; basic error handling; pipelines version-controlled in Git.','Talend, SSIS, cron jobs, Git','Pipeline failure rate (%)'],
-  ['Data Engineering','3','Defined','Standardized ELT pipelines; CI/CD for data; full observability.','dbt models tested and documented; Airflow DAGs standardized; alerts on pipeline failures.','dbt, Airflow, Great Expectations, GitHub Actions','Pipeline uptime (%); Test coverage (%)'],
-  ['Data Engineering','4','Quantitatively Managed','SLA-driven pipelines; automated data quality checks; cost tracking.','SLA per pipeline; automated anomaly detection in data; resource cost per pipeline tracked.','Monte Carlo, Datafold, Atlan','Data SLA compliance (%); Pipeline cost'],
-  ['Data Engineering','5','Optimizing','Self-healing pipelines; AI-generated transformation logic; predictive monitoring.','Auto-remediation of failed jobs; AI suggests schema optimizations; real-time streaming as default.','AI-driven DataOps platforms, Flink, LLM-assisted','MTTR (pipeline); Auto-heal rate (%)'],
-
-  ['Data Quality','1','Initial','No data quality standards; data accuracy unknown.','No validation rules; data errors discovered reactively; no profiling.','Manual checks','# of data errors found per report'],
-  ['Data Quality','2','Managed','Basic validation rules applied; quality issues tracked manually.','Row-count checks; basic null checks; quality issues tracked in spreadsheets.','SQL checks, Excel','Data error rate (%)'],
-  ['Data Quality','3','Defined','Automated data quality suite; quality scores published to stakeholders.','DQ rules codified in dbt tests / Great Expectations; quality dashboards available.','Great Expectations, Soda, dbt tests','DQ score per domain (%)'],
-  ['Data Quality','4','Quantitatively Managed','Predictive quality monitoring; anomaly detection at ingestion.','ML-based anomaly detection; quality trends tracked over time; auto-quarantine of bad data.','Monte Carlo, Anomalo, Bigeye','Anomaly detection precision/recall'],
-  ['Data Quality','5','Optimizing','Self-correcting data quality; AI-generated fix recommendations.','Root-cause AI diagnosis; auto-patching of upstream issues; quality embedded in source systems.','AI DQ platforms, LLM-powered data repair','Auto-fix rate (%); False positive rate (%)'],
-
-  ['Analytics & BI','1','Initial','Static reports in spreadsheets; no self-service capability.','Manual Excel reports; no single source of truth; report duplication across teams.','Excel, PowerPoint','# of manual reports per week'],
-  ['Analytics & BI','2','Managed','Basic BI dashboards in place; limited interactivity.','Central BI tool deployed; standard dashboards for finance/sales; limited drill-down.','Power BI, Tableau, Looker Studio','Dashboard adoption rate (%)'],
-  ['Analytics & BI','3','Defined','Self-service analytics; semantic layer standardized; governed metrics.','Metrics catalog (dbt metrics / LookML); self-service dashboards; embedded analytics.','dbt Metrics, Looker, Power BI Premium','Self-service adoption (%); Report accuracy (%)'],
-  ['Analytics & BI','4','Quantitatively Managed','Predictive analytics embedded; NLP-based querying available.','Forecasting models in dashboards; NLP query (Ask Data, Copilot); A/B test results integrated.','Tableau AI, Power BI Copilot, Sigma','Forecast accuracy (%); NLP query usage'],
-  ['Analytics & BI','5','Optimizing','Autonomous insights; AI proactively surfaces anomalies and opportunities.','AI-generated narrative insights; auto-alerts on KPI deviations; decision intelligence layer.','ThoughtSpot, Einstein Analytics, custom LLM','Time-to-insight (hours); Decision impact (%)'],
-
-  ['AI & Machine Learning','1','Initial','No AI/ML capability; decisions based on intuition or basic statistics.','No ML models in production; data science work is exploratory only; no MLOps.','Jupyter Notebooks, Excel','# of ad-hoc analyses per quarter'],
-  ['AI & Machine Learning','2','Managed','First ML models deployed; manual retraining; limited monitoring.','Models deployed as scripts; manual retraining; basic accuracy metrics tracked.','Python, scikit-learn, basic APIs','Model accuracy (%); # of models in prod'],
-  ['AI & Machine Learning','3','Defined','Standardized ML lifecycle; experiment tracking; model registry in place.','MLflow/DVC for experiments; feature store adopted; automated retraining pipelines.','MLflow, DVC, SageMaker, Vertex AI','Model drift rate; Retraining frequency'],
-  ['AI & Machine Learning','4','Quantitatively Managed','Full MLOps; A/B testing for models; business KPI tracking per model.','Shadow deployments; canary releases; model ROI tracked; responsible AI framework applied.','Kubeflow, BentoML, Evidently AI','Model ROI; Fairness score; Latency p99'],
-  ['AI & Machine Learning','5','Optimizing','AutoML and self-improving models; GenAI integrated in workflows.','LLM agents in production; AutoML for routine tasks; models continuously improve from feedback loops.','LangChain, LlamaIndex, AutoML, Ray','Business value per model; Auto-improvement rate'],
-
-  ['Data Security','1','Initial','No formal data security policies; access not controlled.','No role-based access; data shared freely; no encryption at rest; no audit logs.','None / manual','# of unauthorized data access incidents'],
-  ['Data Security','2','Managed','Basic access control; passwords and basic permissions in place.','User authentication; basic RBAC; some data masked in prod; periodic access reviews.','IAM, basic RBAC, password managers','Access control coverage (%)'],
-  ['Data Security','3','Defined','Comprehensive security policy; encryption, masking, and audit logging standardized.','End-to-end encryption; column-level masking; full audit trail; GDPR/PDPA compliance mapped.','Vault, AWS KMS, Snowflake RBAC, Privacera','Compliance rate (%); Audit coverage (%)'],
-  ['Data Security','4','Quantitatively Managed','Automated threat detection; security metrics tracked and reported.','SIEM integration; automated anomaly detection for data access; Zero Trust architecture.','SIEM, AWS GuardDuty, Macie, Okta','MTTR for security incidents; Zero Trust coverage'],
-  ['Data Security','5','Optimizing','AI-driven security; continuous compliance automation; privacy-by-design.','AI-based threat prediction; automated regulatory change adaptation; differential privacy.','AI Security Platforms, PySyft, Confidential Computing','Predictive threat accuracy (%); Privacy budget'],
-
-  ['DataOps & MLOps','1','Initial','No DevOps practices for data; fully manual deployments.','Manual data deployments; no CI/CD; no testing; no environment separation.','Manual scripts','Deployment frequency; # of production errors'],
-  ['DataOps & MLOps','2','Managed','Basic version control and manual testing; some environment separation.','Git for code; dev/prod environments separated; manual testing before deployment.','Git, basic CI','Deployment lead time (days)'],
-  ['DataOps & MLOps','3','Defined','Full CI/CD for data pipelines and models; automated testing; IaC.','Automated tests for pipelines and models; Terraform for infra; containerized deployments.','Terraform, Docker, GitHub Actions, dbt CI','Deployment success rate (%); Test coverage (%)'],
-  ['DataOps & MLOps','4','Quantitatively Managed','Observability platform; SLOs for data and models; automated rollback.','Full observability (logs, metrics, traces); automated rollback on degradation; cost per deploy tracked.','Datadog, OpenTelemetry, Grafana','DORA metrics; SLO compliance (%)'],
-  ['DataOps & MLOps','5','Optimizing','Self-healing DataOps; AI-generated pipelines; continuous experimentation.','AI recommends pipeline improvements; zero-downtime deployments standard; continuous experimentation culture.','AI-assisted DataOps, GitOps, Platform Engineering','MTTR; Change failure rate; Experimentation velocity'],
-];
-
-const SAMPLE_SMARTOSC = [
-  // Domain, Current Level, Level Name, Evidence / Notes, Key Strengths, Gap to Next Level, Priority, Owner
-  ['Data Governance','2','Managed','Basic data ownership defined for key domains; some policies in Confluence.','Data owners assigned; basic glossary exists','No enterprise catalog; limited policy enforcement','High','Data Chapter Lead'],
-  ['Data Architecture','3','Defined','Modern data stack deployed: Snowflake + Airflow + dbt + Power BI on AWS/Azure.','Full cloud data platform; multi-client deployments proven','Streaming/event-driven not yet standardized','Medium','Data Architect'],
-  ['Data Engineering','3','Defined','Standardized ELT pipelines with dbt; CI/CD via GitHub Actions; Airflow orchestration.','Strong pipeline automation; dbt adoption across projects','Cost tracking per pipeline not yet in place','Medium','Data Engineering Lead'],
-  ['Data Quality','2','Managed','Basic null/row-count checks in pipelines; quality issues tracked in Jira.','Checks present in most pipelines','No automated DQ scoring or dashboards','High','Data Quality Lead'],
-  ['Analytics & BI','3','Defined','Self-service Power BI dashboards; semantic layer partially defined; served 10+ clients.','Strong BI delivery track record; certified Power BI team','No unified metrics catalog; limited NLP querying','Medium','BI Lead'],
-  ['AI & Machine Learning','3','Defined','ML models in production (NIKE, VinID); MLflow experiments; SageMaker deployments.','Proven ML delivery (demand forecast 91% accuracy, churn prediction)','No formal feature store; limited responsible AI framework','High','ML Chapter Lead'],
-  ['Data Security','2','Managed','Basic RBAC on cloud platforms; some data masking; GDPR awareness training done.','AWS IAM, Cognito deployed; basic masking','No SIEM; no automated threat detection; no PDPA audit trail','High','Security Lead'],
-  ['DataOps & MLOps','3','Defined','CI/CD via GitHub Actions; Terraform IaC; Docker containers; basic monitoring.','Reproducible infra deployments; containerized services','No full observability stack; no DORA metrics tracking','Medium','DevOps Lead'],
-];
-
-// =============================================
-//  TAB SWITCHING
-// =============================================
+/* ════════════════════════════════════════
+   TAB SWITCH
+════════════════════════════════════════ */
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -551,321 +761,365 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-// =============================================
-//  LOAD DATA FROM GOOGLE SHEETS
-// =============================================
-async function loadData() {
-  const sheetId = document.getElementById('sheetId').value.trim();
-  if (!sheetId || sheetId === 'YOUR_SHEET_ID_HERE') {
-    showStatus('error', '❌ Please enter a valid Google Sheet ID first.');
-    return;
-  }
-
-  showStatus('loading', '<div class="spinner"></div> Connecting to Google Sheets...');
-  document.getElementById('loadBtn').disabled = true;
-
-  try {
-    const [standardData, smartoscData] = await Promise.all([
-      fetchSheetCSV(sheetId, 'Standard'),
-      fetchSheetCSV(sheetId, 'SmartOSC-Current'),
-    ]);
-    renderStandard(standardData);
-    renderSmartOSC(smartoscData);
-    showStatus('success', '✅ Data loaded successfully from Google Sheets!');
-  } catch (err) {
-    showStatus('error', '❌ Failed to load: ' + err.message + '. Check Sheet ID and make sure the sheet is published.');
-    console.error(err);
-  } finally {
-    document.getElementById('loadBtn').disabled = false;
-  }
-}
-
-async function fetchSheetCSV(sheetId, sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status} on sheet "${sheetName}"`);
-  const text = await resp.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  return lines.slice(1).map(line => { // skip header
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQ = !inQ; }
-      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    cols.push(cur.trim());
-    return cols;
-  }).filter(row => row.some(c => c.length > 0));
-}
-
-// =============================================
-//  LOAD SAMPLE DATA
-// =============================================
-function loadSampleData() {
-  showStatus('success', '🧪 Sample data loaded successfully! This is demo data for illustration.');
-  renderStandard(SAMPLE_STANDARD);
-  renderSmartOSC(SAMPLE_SMARTOSC);
-}
-
-// =============================================
-//  RENDER STANDARD TAB
-// =============================================
-function renderStandard(data) {
-  // data cols: [Domain, Level, LevelName, Description, KeyActivities, Tools, KPIs]
-  const container = document.getElementById('standardContent');
-
-  // Group by domain
-  const domains = {};
-  data.forEach(row => {
-    const domain = row[0] || 'Uncategorized';
-    if (!domains[domain]) domains[domain] = [];
-    domains[domain].push(row);
-  });
-
-  let html = '';
-
-  // Level Legend
-  html += '<div class="level-legend">';
-  for (const [lvl, cfg] of Object.entries(LEVEL_CONFIG)) {
-    html += `<div class="legend-item" style="background:${cfg.bg};border-color:${cfg.border};color:${cfg.color}">
-      <span class="legend-dot" style="background:${cfg.color}"></span>
-      ${cfg.label}
-    </div>`;
-  }
-  html += '</div>';
-
-  // Full Table View
-  html += `<div class="table-section">
-    <div class="section-title">
-      <div class="title-icon" style="background:#eff6ff">📋</div>
-      Framework Overview Table
-    </div>
-    <div class="table-wrapper">
-      <div class="table-header-bar">
-        <h3>📊 Data Capability Levels — All Domains</h3>
-        <span class="table-meta">${data.length} entries across ${Object.keys(domains).length} domains</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Domain</th><th>Level</th><th>Level Name</th>
-              <th>Description</th><th>Key Activities</th>
-              <th>Tools & Technologies</th><th>KPIs / Metrics</th>
-            </tr>
-          </thead>
-          <tbody>`;
-
-  data.forEach(row => {
-    const [domain, level, levelName, desc, activities, tools, kpis] = row;
-    const lvlNum = parseInt(level) || 1;
-    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
-    const icon = DOMAIN_ICONS[domain] || '📌';
-    const toolTags = (tools || '').split(',').map(t => t.trim()).filter(Boolean)
-      .map(t => `<span class="tag">${t}</span>`).join('');
-
-    html += `<tr>
-      <td><strong>${icon} ${domain}</strong></td>
-      <td><span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum}</span></td>
-      <td style="font-weight:600;color:${cfg.color}">${levelName || ''}</td>
-      <td style="max-width:220px;font-size:12.5px;color:#4b5563">${desc || ''}</td>
-      <td style="max-width:220px;font-size:12.5px;color:#4b5563">${activities || ''}</td>
-      <td style="max-width:180px">${toolTags}</td>
-      <td style="font-size:12.5px;color:#4b5563">${kpis || ''}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table></div></div></div>`;
-
-  // Capability Cards per Domain
-  html += `<div class="section-title" style="margin-top:36px">
-    <div class="title-icon" style="background:#f0fdf4">🗂️</div>
-    Domain Deep Dive Cards
-  </div>
-  <div class="capability-grid">`;
-
-  for (const [domain, rows] of Object.entries(domains)) {
-    const icon = DOMAIN_ICONS[domain] || '📌';
-    html += `<div class="cap-card">
-      <div class="cap-card-header">
-        <span class="cap-card-icon">${icon}</span>
-        <span class="cap-card-title">${domain}</span>
-      </div>
-      <div class="cap-card-body">`;
-
-    rows.sort((a, b) => parseInt(a[1]) - parseInt(b[1])).forEach(row => {
-      const lvlNum = parseInt(row[1]) || 1;
-      const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
-      html += `<div class="cap-level-row">
-        <div class="cap-level-num" style="background:${cfg.bg};color:${cfg.color}">${lvlNum}</div>
-        <div class="cap-level-info">
-          <h4 style="color:${cfg.color}">${row[2] || ''}</h4>
-          <p>${row[3] || ''}</p>
-        </div>
-      </div>`;
-    });
-
-    html += `</div></div>`;
-  }
-
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-// =============================================
-//  RENDER SMARTOSC TAB
-// =============================================
-function renderSmartOSC(data) {
-  // cols: [Domain, CurrentLevel, LevelName, Evidence, KeyStrengths, GapToNext, Priority, Owner]
-  const container = document.getElementById('smartoscContent');
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No SmartOSC-Current data found.</p></div>`;
-    return;
-  }
-
-  const validRows = data.filter(r => r[0] && r[1]);
-  const avgLevel = (validRows.reduce((s, r) => s + (parseInt(r[1]) || 0), 0) / validRows.length).toFixed(1);
-  const highPriCount = validRows.filter(r => (r[6]||'').toLowerCase() === 'high').length;
-  const level5Count = validRows.filter(r => parseInt(r[1]) >= 4).length;
-
-  // Summary Cards
-  let html = `
-    <div class="section-title">
-      <div class="title-icon" style="background:#fef3c7">📈</div>
-      SmartOSC Data Maturity Overview
-    </div>
-    <div class="summary-cards">
-      <div class="sum-card">
-        <div class="sum-value" style="color:var(--primary)">${avgLevel}</div>
-        <div class="sum-label">Average Maturity Level</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-value" style="color:#16a34a">${validRows.length}</div>
-        <div class="sum-label">Domains Assessed</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-value" style="color:#dc2626">${highPriCount}</div>
-        <div class="sum-label">High Priority Gaps</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-value" style="color:#7c3aed">${level5Count}</div>
-        <div class="sum-label">Domains at Level 4+</div>
-      </div>
-    </div>`;
-
-  // Maturity Radar (visual progress bars)
-  html += `
-    <div class="section-title">
-      <div class="title-icon" style="background:#f0f9ff">📡</div>
-      Maturity Level by Domain
-    </div>
-    <div class="table-wrapper" style="margin-bottom:32px">
-      <div style="padding:20px 24px">`;
-
-  validRows.forEach(row => {
-    const domain = row[0], lvlNum = parseInt(row[1]) || 1;
-    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
-    const icon = DOMAIN_ICONS[domain] || '📌';
-    const pct = (lvlNum / 5) * 100;
-    html += `
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;align-items:center">
-          <span style="font-size:13px;font-weight:600">${icon} ${domain}</span>
-          <span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum} – ${row[2] || cfg.label}</span>
-        </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width:${pct}%;background:${cfg.color}"></div>
-          </div>
-          <span class="progress-label">${lvlNum}/5</span>
-        </div>
-      </div>`;
-  });
-  html += `</div></div>`;
-
-  // Detail Table
-  html += `
-    <div class="section-title">
-      <div class="title-icon" style="background:#fdf4ff">🔍</div>
-      Detailed Assessment
-    </div>
-    <div class="table-wrapper">
-      <div class="table-header-bar">
-        <h3>🏢 SmartOSC Current State — Domain Assessment</h3>
-        <span class="table-meta">${validRows.length} domains assessed</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Domain</th><th>Current Level</th><th>Evidence / Notes</th>
-              <th>Key Strengths</th><th>Gap to Next Level</th>
-              <th>Priority</th><th>Owner</th>
-            </tr>
-          </thead>
-          <tbody>`;
-
-  const priorityColors = { 'high': '#dc2626', 'medium': '#d97706', 'low': '#16a34a' };
-
-  validRows.forEach(row => {
-    const [domain, level, levelName, evidence, strengths, gap, priority, owner] = row;
-    const lvlNum = parseInt(level) || 1;
-    const cfg = LEVEL_CONFIG[lvlNum] || LEVEL_CONFIG[1];
-    const icon = DOMAIN_ICONS[domain] || '📌';
-    const priLower = (priority || '').toLowerCase();
-    const priColor = priorityColors[priLower] || '#6b7280';
-
-    html += `<tr>
-      <td><strong>${icon} ${domain}</strong></td>
-      <td>
-        <span class="level-badge level-${lvlNum}">${cfg.emoji} L${lvlNum}</span>
-        <div style="font-size:11px;color:${cfg.color};margin-top:3px;font-weight:600">${levelName || ''}</div>
-      </td>
-      <td style="font-size:12.5px;color:#4b5563;max-width:200px">${evidence || '—'}</td>
-      <td style="font-size:12.5px;color:#059669;max-width:180px">${strengths ? '✅ ' + strengths : '—'}</td>
-      <td style="font-size:12.5px;color:#b45309;max-width:180px">${gap ? '🎯 ' + gap : '—'}</td>
-      <td>
-        <span style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:700;
-          background:${priColor}1a;color:${priColor};border:1px solid ${priColor}44">
-          ${priority || '—'}
-        </span>
-      </td>
-      <td style="font-size:12.5px;font-weight:600;color:var(--primary)">${owner || '—'}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table></div></div>`;
-  container.innerHTML = html;
-}
-
-// =============================================
-//  STATUS BAR
-// =============================================
-function showStatus(type, msg) {
-  const bar = document.getElementById('statusBar');
-  bar.className = `status-bar ${type}`;
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+function showToast(type, msg) {
+  const bar = document.getElementById('toastBar');
+  bar.className = `toast ${type}`;
   bar.innerHTML = msg;
   bar.style.display = 'flex';
 }
 
-// =============================================
-//  SCROLL TOP BUTTON
-// =============================================
-window.addEventListener('scroll', () => {
-  const btn = document.getElementById('scrollTop');
-  btn.classList.toggle('visible', window.scrollY > 300);
-});
+/* ════════════════════════════════════════
+   RENDER: CAPABILITY STATEMENT TAB
+   Expected columns (sheet "Statement"):
+   A: Domain
+   B: Capability Area
+   C: Capability Statement (the main text)
+   D: Current Level (1-5)
+   E: Evidence / Examples
+   F: Key Technologies
+   G: Industries Served
+   H: Target Level
+   I: Gap / Improvement Plan
+   J: Priority (High/Medium/Low)
+   K: Owner
+════════════════════════════════════════ */
+function renderStatement(rows) {
+  const el = document.getElementById('statementContent');
+  const valid = rows.filter(r => r[0] || r[1] || r[2]);
+  document.getElementById('cnt-statement').textContent = valid.length;
 
-// Auto-load sample on first visit
-window.addEventListener('DOMContentLoaded', () => {
-  loadSampleData();
+  if (!valid.length) {
+    el.innerHTML = emptyState('📋', 'Sheet "Statement" chưa có dữ liệu hoặc chưa tồn tại.');
+    return;
+  }
+
+  // Group by Domain
+  const domains = {};
+  valid.forEach(r => {
+    const d = (r[0]||'').trim() || 'General';
+    if (!domains[d]) domains[d] = [];
+    domains[d].push(r);
+  });
+
+  // Summary stats
+  const avgLv = (valid.reduce((s,r)=>s+(parseInt(r[3])||0),0)/valid.length).toFixed(1);
+  const highCount = valid.filter(r=>(r[9]||'').toLowerCase()==='high').length;
+  const l4plus    = valid.filter(r=>parseInt(r[3])>=4).length;
+  const domCount  = Object.keys(domains).length;
+
+  let html = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="val" style="color:var(--c-brand)">${valid.length}</div><div class="lbl">Total Capability Statements</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--c-brand)">${avgLv}</div><div class="lbl">Average Maturity Level</div></div>
+      <div class="stat-card"><div class="val" style="color:#16a34a">${domCount}</div><div class="lbl">Capability Domains</div></div>
+      <div class="stat-card"><div class="val" style="color:#7c3aed">${l4plus}</div><div class="lbl">Areas at Level 4+</div></div>
+      <div class="stat-card"><div class="val" style="color:#dc2626">${highCount}</div><div class="lbl">High Priority Items</div></div>
+    </div>`;
+
+  // Cards per domain
+  for (const [domain, domRows] of Object.entries(domains)) {
+    const icon = dvIcon(domain);
+    html += `
+      <div class="section-hd" style="margin-top:28px">
+        <div class="icon-box" style="background:#eff6ff">${icon}</div>
+        <div><h2>${domain}</h2><p>${domRows.length} capability statement${domRows.length>1?'s':''}</p></div>
+      </div>
+      <div class="cs-grid">`;
+
+    domRows.forEach(r => {
+      const [domain, area, statement, level, evidence, techs, industries, targetLv, gap, priority, owner] = r;
+      const cfg  = lvCfg(level);
+      const tCfg = targetLv ? lvCfg(targetLv) : null;
+
+      // Build tech tags
+      const techTags = (techs||'').split(',').map(t=>t.trim()).filter(Boolean)
+        .map(t=>`<span class="tag tag-blue">${t}</span>`).join('');
+      const indTags = (industries||'').split(',').map(t=>t.trim()).filter(Boolean)
+        .map(t=>`<span class="tag tag-green">${t}</span>`).join('');
+
+      html += `
+        <div class="cs-card">
+          <div class="cs-card-header">
+            <div class="cs-card-icon">${icon}</div>
+            <div class="cs-card-hinfo">
+              <h3>${area || domain || 'Capability'}</h3>
+              <p>${domain}</p>
+            </div>
+          </div>
+          <div class="cs-card-body">
+            ${statement ? `
+            <div class="cs-statement">
+              <div class="cs-stmt-label">📌 Capability Statement</div>
+              <p>${statement}</p>
+            </div>` : ''}
+
+            <div class="cs-info-grid">
+              ${evidence ? `
+              <div class="cs-info-item full">
+                <div class="cs-info-label">🏆 Evidence / Examples</div>
+                <div class="cs-info-val">${evidence}</div>
+              </div>` : ''}
+
+              ${techTags ? `
+              <div class="cs-info-item full">
+                <div class="cs-info-label">🔧 Key Technologies</div>
+                <div class="tag-list">${techTags}</div>
+              </div>` : ''}
+
+              ${indTags ? `
+              <div class="cs-info-item full">
+                <div class="cs-info-label">🏭 Industries Served</div>
+                <div class="tag-list">${indTags}</div>
+              </div>` : ''}
+
+              ${gap ? `
+              <div class="cs-info-item full">
+                <div class="cs-info-label">🎯 Gap / Improvement Plan</div>
+                <div class="cs-info-val" style="color:#b45309">${gap}</div>
+              </div>` : ''}
+
+              ${owner ? `
+              <div class="cs-info-item">
+                <div class="cs-info-label">👤 Owner</div>
+                <div class="cs-info-val" style="color:var(--c-brand);font-weight:600">${owner}</div>
+              </div>` : ''}
+            </div>
+          </div>
+          <div class="cs-card-footer">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="level-pill ${cfg.cls}">${cfg.emoji} L${parseInt(level)||'?'} · ${cfg.label}</span>
+              ${tCfg && targetLv !== level ? `<span style="font-size:11px;color:var(--c-muted)">→ Target:</span>
+              <span class="level-pill ${tCfg.cls}">${tCfg.emoji} L${parseInt(targetLv)}</span>` : ''}
+            </div>
+            ${priority ? `<span class="pri-pill pri-${priority}" style="border:1px solid">${priority === 'High' ? '🔥' : priority === 'Medium' ? '⚡' : '✅'} ${priority}</span>` : ''}
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+/* ════════════════════════════════════════
+   RENDER: LEVEL FRAMEWORK TAB
+   Expected columns (sheet "Standard"):
+   A: Domain  B: Level  C: Level Name
+   D: Description  E: Key Activities
+   F: Tools & Technologies  G: KPIs/Metrics
+════════════════════════════════════════ */
+function renderFramework(rows) {
+  const el = document.getElementById('frameworkContent');
+  const valid = rows.filter(r => r[0] || r[1]);
+  document.getElementById('cnt-framework').textContent = valid.length;
+
+  if (!valid.length) {
+    el.innerHTML = emptyState('🏛️', 'Sheet "Standard" chưa có dữ liệu hoặc chưa tồn tại.');
+    return;
+  }
+
+  // Group by domain
+  const domains = {};
+  valid.forEach(r => {
+    const d = (r[0]||'').trim() || 'Uncategorized';
+    if (!domains[d]) domains[d] = [];
+    domains[d].push(r);
+  });
+
+  // Legend
+  let html = '<div class="level-legend">';
+  for (const [n, cfg] of Object.entries(LV)) {
+    html += `<div class="legend-chip" style="background:${cfg.bg};border-color:${cfg.bd};color:${cfg.color}">
+      <span class="legend-dot" style="background:${cfg.color}"></span>L${n} · ${cfg.label}
+    </div>`;
+  }
+  html += '</div>';
+
+  // Stats
+  html += `<div class="stats-row" style="margin-bottom:24px">
+    <div class="stat-card"><div class="val" style="color:var(--c-brand)">${valid.length}</div><div class="lbl">Total Framework Entries</div></div>
+    <div class="stat-card"><div class="val" style="color:#16a34a">${Object.keys(domains).length}</div><div class="lbl">Capability Domains</div></div>
+    <div class="stat-card"><div class="val" style="color:#7c3aed">5</div><div class="lbl">Maturity Levels</div></div>
+  </div>`;
+
+  // Accordion per domain
+  for (const [domain, domRows] of Object.entries(domains)) {
+    const icon = dvIcon(domain);
+    const sorted = [...domRows].sort((a,b) => parseInt(a[1])-parseInt(b[1]));
+    html += `
+      <div class="domain-accordion" onclick="toggleAccordion(this)">
+        <div class="domain-trigger">
+          <span class="d-icon">${icon}</span>
+          <span class="d-name">${domain}</span>
+          <span class="d-count">${sorted.length} levels</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="domain-body">
+          <table class="fw-table">
+            <thead><tr>
+              <th>Level</th><th>Name</th><th>Description</th>
+              <th>Key Activities</th><th>Tools & Technologies</th><th>KPIs / Metrics</th>
+            </tr></thead>
+            <tbody>`;
+    sorted.forEach(r => {
+      const lvNum = parseInt(r[1])||1;
+      const cfg   = lvCfg(lvNum);
+      const toolTags = (r[5]||'').split(',').map(t=>t.trim()).filter(Boolean)
+        .map(t=>`<span class="tag tag-blue">${t}</span>`).join('');
+      html += `<tr>
+        <td><span class="level-pill ${cfg.cls}">${cfg.emoji} L${lvNum}</span></td>
+        <td style="font-weight:700;color:${cfg.color};white-space:nowrap">${r[2]||''}</td>
+        <td style="max-width:200px;color:#4b5563;font-size:12px">${r[3]||''}</td>
+        <td style="max-width:200px;color:#4b5563;font-size:12px">${r[4]||''}</td>
+        <td style="max-width:180px">${toolTags || '<span style="color:#94a3b8">—</span>'}</td>
+        <td style="color:#4b5563;font-size:12px;white-space:nowrap">${r[6]||'—'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  el.innerHTML = html;
+  // Open first accordion by default
+  const first = el.querySelector('.domain-accordion');
+  if (first) first.classList.add('open');
+}
+
+/* ════════════════════════════════════════
+   RENDER: SMARTOSC CURRENT TAB
+   Expected columns (sheet "SmartOSC-Current"):
+   A: Domain  B: Current Level  C: Level Name
+   D: Evidence/Notes  E: Key Strengths
+   F: Gap to Next Level  G: Priority  H: Owner
+════════════════════════════════════════ */
+function renderSmartOSC(rows) {
+  const el = document.getElementById('smartoscContent');
+  const valid = rows.filter(r => r[0] && r[1]);
+  document.getElementById('cnt-smartosc').textContent = valid.length;
+
+  if (!valid.length) {
+    el.innerHTML = emptyState('🏢', 'Sheet "SmartOSC-Current" chưa có dữ liệu hoặc chưa tồn tại.');
+    return;
+  }
+
+  const avgLv     = (valid.reduce((s,r)=>s+(parseInt(r[1])||0),0)/valid.length).toFixed(1);
+  const highCount = valid.filter(r=>(r[6]||'').toLowerCase()==='high').length;
+  const l4plus    = valid.filter(r=>parseInt(r[1])>=4).length;
+
+  let html = `
+    <div class="section-hd">
+      <div class="icon-box" style="background:#fef3c7">📈</div>
+      <div><h2>SmartOSC Data Maturity Overview</h2><p>Tình trạng năng lực dữ liệu hiện tại</p></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="val" style="color:var(--c-brand)">${avgLv}</div><div class="lbl">Average Maturity Level</div></div>
+      <div class="stat-card"><div class="val" style="color:#16a34a">${valid.length}</div><div class="lbl">Domains Assessed</div></div>
+      <div class="stat-card"><div class="val" style="color:#dc2626">${highCount}</div><div class="lbl">High Priority Gaps</div></div>
+      <div class="stat-card"><div class="val" style="color:#7c3aed">${l4plus}</div><div class="lbl">Domains at Level 4+</div></div>
+    </div>`;
+
+  // Radar / Progress bars
+  html += `
+    <div class="section-hd">
+      <div class="icon-box" style="background:#f0f9ff">📡</div>
+      <div><h2>Maturity Radar</h2><p>Mức độ trưởng thành theo domain</p></div>
+    </div>
+    <div class="radar-row">`;
+
+  valid.forEach(r => {
+    const lvNum = parseInt(r[1])||1;
+    const cfg   = lvCfg(lvNum);
+    const pct   = (lvNum/5)*100;
+    html += `
+      <div class="radar-item">
+        <div class="radar-item-hd">
+          <span class="radar-item-name">${dvIcon(r[0])} ${r[0]||'—'}</span>
+          <span class="level-pill ${cfg.cls}">${cfg.emoji} L${lvNum} · ${r[2]||cfg.label}</span>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${cfg.color}"></div></div>
+          <span class="pbar-lbl">${lvNum}/5</span>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+
+  // Detailed cards
+  html += `
+    <div class="section-hd">
+      <div class="icon-box" style="background:#fdf4ff">🔍</div>
+      <div><h2>Detailed Assessment</h2><p>Chi tiết đánh giá từng domain</p></div>
+    </div>
+    <div class="cs-grid">`;
+
+  valid.forEach(r => {
+    const [domain, level, lvName, evidence, strengths, gap, priority, owner] = r;
+    const cfg  = lvCfg(level);
+    const icon = dvIcon(domain);
+    html += `
+      <div class="cs-card">
+        <div class="cs-card-header">
+          <div class="cs-card-icon">${icon}</div>
+          <div class="cs-card-hinfo">
+            <h3>${domain}</h3>
+            <p>${lvName || cfg.label}</p>
+          </div>
+        </div>
+        <div class="cs-card-body">
+          ${evidence ? `<div class="cs-statement">
+            <div class="cs-stmt-label">📋 Evidence / Notes</div>
+            <p>${evidence}</p>
+          </div>` : ''}
+          <div class="cs-info-grid">
+            ${strengths ? `<div class="cs-info-item full">
+              <div class="cs-info-label">✅ Key Strengths</div>
+              <div class="cs-info-val" style="color:#15803d">${strengths}</div>
+            </div>` : ''}
+            ${gap ? `<div class="cs-info-item full">
+              <div class="cs-info-label">🎯 Gap to Next Level</div>
+              <div class="cs-info-val" style="color:#b45309">${gap}</div>
+            </div>` : ''}
+            ${owner ? `<div class="cs-info-item">
+              <div class="cs-info-label">👤 Owner</div>
+              <div class="cs-info-val" style="color:var(--c-brand);font-weight:600">${owner}</div>
+            </div>` : ''}
+          </div>
+        </div>
+        <div class="cs-card-footer">
+          <span class="level-pill ${cfg.cls}">${cfg.emoji} L${parseInt(level)||'?'} · ${cfg.label}</span>
+          ${priority ? `<span class="pri-pill pri-${priority}" style="border:1px solid">
+            ${priority==='High'?'🔥':priority==='Medium'?'⚡':'✅'} ${priority}
+          </span>` : ''}
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ════════════════════════════════════════
+   ACCORDION
+════════════════════════════════════════ */
+function toggleAccordion(el) {
+  // Only toggle when clicking the trigger row, not the table inside
+  el.classList.toggle('open');
+}
+// Prevent table clicks from collapsing accordion
+document.addEventListener('click', e => {
+  if (e.target.closest('.domain-body')) e.stopPropagation();
+}, true);
+
+/* ════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════ */
+function emptyState(icon, msg) {
+  return `<div class="empty-state"><div class="empty-ico">${icon}</div><p>${msg}</p></div>`;
+}
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 320);
 });
 </script>
 </body>
